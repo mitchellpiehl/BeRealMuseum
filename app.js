@@ -133,7 +133,7 @@ function setView(name) {
   els.tabs.forEach(t => t.classList.toggle("active", t.dataset.view === name));
   if (name === "favorites") {
     setFavMode(favMode || "grid");
-    #refreshFavoritesUI();
+    ///#refreshFavoritesUI();
   }
 }
 

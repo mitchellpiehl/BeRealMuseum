@@ -1,46 +1,199 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BeReal Museum (Posts)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; }
-    header { padding: 16px 20px; border-bottom: 1px solid #ddd; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-    header h1 { margin: 0; font-size: 18px; }
-    main { padding: 16px 20px; }
-    .muted { color: #666; font-size: 13px; }
-    .tabs { display:flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-    .tab { border: 1px solid #ddd; padding: 8px 10px; border-radius: 999px; cursor: pointer; user-select:none; }
-    .tab.active { background: #111; color:#fff; border-color:#111; }
-    .btn { border:1px solid #ddd; background:#fff; padding:8px 10px; border-radius: 10px; cursor:pointer; }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    :root {
+      --bg-body: #faf9f6;
+      /* Off-white gallery */
+      --bg-card: #ffffff;
+      --text-main: #1a1a1a;
+      --text-muted: #666;
+      --accent: #111;
+      --border: #e0e0e0;
+      --radius-btn: 8px;
+      --radius-card: 16px;
+      --font-main: 'Outfit', system-ui, sans-serif;
+    }
 
-    .tile { border-radius: 12px; overflow: hidden; border: 1px solid #eee; background: #fafafa; cursor: pointer; }
-    .meta { padding: 10px; font-size: 12px; color:#444; display:flex; justify-content: space-between; gap: 8px; }
-    .meta span { white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-    .frame { position: relative; width: 100%; height: 240px; background:#000; }
-    .frame img.back { width: 100%; height: 100%; object-fit: cover; display:block; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-body);
+      color: var(--text-main);
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    main {
+      padding: 16px 20px;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .tab {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      padding: 8px 16px;
+      border-radius: 999px;
+      /* Pill */
+      cursor: pointer;
+      user-select: none;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      color: var(--text-muted);
+    }
+
+    .tab:hover {
+      background: #eee;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      padding: 8px 14px;
+      border-radius: var(--radius-btn);
+      cursor: pointer;
+      font-family: var(--font-main);
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      color: var(--text-main);
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: #ccc;
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .tile {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #eee;
+      background: #fafafa;
+      cursor: pointer;
+    }
+
+    .meta {
+      padding: 10px;
+      font-size: 12px;
+      color: #444;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .meta span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .frame {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      background: #000;
+    }
+
+    .frame img.back {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     .frame img.front {
-      position: absolute; right: 10px; bottom: 10px;
-      width: 80px; height: 108px; object-fit: cover;
-      border-radius: 12px; border: 2px solid rgba(255,255,255,.95);
-      box-shadow: 0 8px 18px rgba(0,0,0,.35);
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 80px;
+      height: 108px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, .95);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .35);
       background: #222;
     }
 
-    #mosaicWrap { border: 1px solid #ddd; border-radius: 12px; overflow:hidden; }
-    #mosaic { width: 100%; height: 72vh; display:block; background:#111; touch-action: none; }
-    .row { display:flex; gap: 10px; flex-wrap: wrap; align-items:center; }
+    #mosaicWrap {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      overflow: hidden;
+    }
 
-    #favoritesStrip, #timelineStrip {
+    #mosaic {
+      width: 100%;
+      height: 72vh;
+      display: block;
+      background: #111;
+      touch-action: none;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    #favoritesStrip,
+    #timelineStrip {
       display: flex;
       gap: 12px;
       overflow-x: auto;
       padding: 6px 2px 12px;
       scroll-snap-type: x mandatory;
     }
-    .stripCard { min-width: 260px; scroll-snap-align: start; }
+
+    .stripCard {
+      min-width: 260px;
+      scroll-snap-align: start;
+    }
 
     #timelineGrid {
       display: grid;
@@ -52,14 +205,18 @@
     #storyModal {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,.86);
+      background: rgba(0, 0, 0, .86);
       display: none;
       align-items: center;
       justify-content: center;
       z-index: 9999;
       padding: 18px;
     }
-    #storyModal.open { display: flex; }
+
+    #storyModal.open {
+      display: flex;
+    }
+
     .storyBox {
       width: min(980px, 100%);
       height: min(86vh, 820px);
@@ -68,34 +225,63 @@
       overflow: hidden;
       background: #000;
     }
-    .storyBox img.back { width: 100%; height: 100%; object-fit: contain; display: block; background:#000; }
+
+    .storyBox img.back {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      background: #000;
+    }
+
     .storyBox img.front {
-      position: absolute; right: 16px; bottom: 16px;
-      width: 120px; height: 160px; object-fit: cover;
-      border-radius: 14px; border: 2px solid rgba(255,255,255,.95);
-      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      width: 120px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 14px;
+      border: 2px solid rgba(255, 255, 255, .95);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .35);
       background: #222;
     }
+
     .storyTop {
-      position: absolute; left: 0; right: 0; top: 0;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
       padding: 12px 14px;
-      display: flex; gap: 10px; align-items: center; justify-content: space-between;
-      background: linear-gradient(to bottom, rgba(0,0,0,.75), rgba(0,0,0,0));
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, .75), rgba(0, 0, 0, 0));
       color: #fff;
       font-size: 14px;
       z-index: 10;
       pointer-events: auto;
     }
-    .storyLabel { font-weight: 600; }
-    .storyMeta { opacity: .85; font-size: 13px; }
+
+    .storyLabel {
+      font-weight: 600;
+    }
+
+    .storyMeta {
+      opacity: .85;
+      font-size: 13px;
+    }
+
     .storyBtn {
-      border: 1px solid rgba(255,255,255,.25);
-      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255, 255, 255, .25);
+      background: rgba(255, 255, 255, .12);
       color: #fff;
       padding: 8px 10px;
       border-radius: 999px;
       cursor: pointer;
     }
+
     .storyNav {
       z-index: 1;
       top: 64px;
@@ -106,412 +292,849 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
     }
-    .storyNav div { cursor: pointer; }
-    .hint { color:#666; font-size: 12px; }
+
+    .storyNav div {
+      cursor: pointer;
+    }
+
+    .hint {
+      color: #666;
+      font-size: 12px;
+    }
 
     /* ===== New Favorites Modes Styling ===== */
 
     /* Highlight Reel modal */
-    #reelModal{
+    #reelModal {
       position: fixed;
       inset: 0;
-      display:none;
-      align-items:center;
-      justify-content:center;
+      display: none;
+      align-items: center;
+      justify-content: center;
       z-index: 10000;
-      background: rgba(0,0,0,.92);
+      background: rgba(0, 0, 0, .92);
       padding: 18px;
     }
-    #reelModal.open{ display:flex; }
-    .reelBox{
+
+    #reelModal.open {
+      display: flex;
+    }
+
+    .reelBox {
       width: min(980px, 100%);
       height: min(86vh, 820px);
       border-radius: 18px;
-      overflow:hidden;
-      background:#000;
+      overflow: hidden;
+      background: #000;
       position: relative;
     }
-    .reelMedia{
-      position:absolute; inset:0;
-      overflow:hidden;
-      background:#000;
+
+    .reelMedia {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: #000;
     }
-    .reelMedia img.back{
-      position:absolute; inset:0;
-      width:100%; height:100%;
+
+    .reelMedia img.back {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       transform-origin: center;
       animation: kb 8s linear forwards;
       opacity: 0;
       transition: opacity .45s ease;
     }
-    .reelMedia img.back.show{ opacity: 1; }
-    @keyframes kb {
-      from { transform: scale(1) translate(0,0); }
-      to   { transform: scale(1.08) translate(-2%, -2%); }
+
+    .reelMedia img.back.show {
+      opacity: 1;
     }
-    .reelMedia img.front{
-      position:absolute; right: 16px; bottom: 16px;
-      width: 120px; height: 160px;
+
+    @keyframes kb {
+      from {
+        transform: scale(1) translate(0, 0);
+      }
+
+      to {
+        transform: scale(1.08) translate(-2%, -2%);
+      }
+    }
+
+    .reelMedia img.front {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      width: 120px;
+      height: 160px;
       object-fit: cover;
-      border-radius: 14px; border: 2px solid rgba(255,255,255,.95);
-      box-shadow: 0 10px 22px rgba(0,0,0,.35);
+      border-radius: 14px;
+      border: 2px solid rgba(255, 255, 255, .95);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .35);
       background: #222;
       opacity: 0;
       transition: opacity .45s ease;
     }
-    .reelMedia img.front.show{ opacity: 1; }
-    .reelTop{
-      position:absolute; left:0; right:0; top:0;
+
+    .reelMedia img.front.show {
+      opacity: 1;
+    }
+
+    .reelTop {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
       padding: 12px 14px;
-      display:flex; justify-content: space-between; gap: 10px; align-items:center;
-      background: linear-gradient(to bottom, rgba(0,0,0,.78), rgba(0,0,0,0));
-      color:#fff;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, .78), rgba(0, 0, 0, 0));
+      color: #fff;
       z-index: 5;
     }
-    .reelBottom{
-      position:absolute; left:0; right:0; bottom:0;
+
+    .reelBottom {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
       padding: 14px 16px;
-      background: linear-gradient(to top, rgba(0,0,0,.78), rgba(0,0,0,0));
-      color:#fff;
+      background: linear-gradient(to top, rgba(0, 0, 0, .78), rgba(0, 0, 0, 0));
+      color: #fff;
       z-index: 5;
     }
-    .reelLabel{ font-weight: 650; font-size: 16px; opacity: 0; transition: opacity .35s ease; }
-    .reelLabel.show{ opacity: 1; }
-    .reelMeta{ opacity: .85; font-size: 13px; margin-top: 2px; }
+
+    .reelLabel {
+      font-weight: 650;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity .35s ease;
+    }
+
+    .reelLabel.show {
+      opacity: 1;
+    }
+
+    .reelMeta {
+      opacity: .85;
+      font-size: 13px;
+      margin-top: 2px;
+    }
 
     /* Museum wall */
-    #museumWallWrap { display:none; }
-    .wallToolbar { margin: 0 0 12px; }
-    .museumWall{
-      column-count: 4;
-      column-gap: 14px;
+    #museumWallWrap {
+      display: none;
     }
-    @media (max-width: 1100px){ .museumWall{ column-count:3; } }
-    @media (max-width: 820px){ .museumWall{ column-count:2; } }
-    @media (max-width: 520px){ .museumWall{ column-count:1; } }
 
-    .wallItem{
-      break-inside: avoid;
-      margin: 0 0 14px;
-      border-radius: 14px;
-      background: #fff;
-      border: 1px solid #eee;
-      box-shadow: 0 10px 24px rgba(0,0,0,.14);
-      transform: rotate(var(--rot, 0deg));
-      transition: transform .2s ease;
-      overflow:hidden;
-      cursor:pointer;
+    .wallToolbar {
+      margin: 0 0 12px;
     }
-    .wallItem.reduceMotion{ transform: none!important; transition: none!important; }
-    .wallFrame{ position: relative; background:#000; }
-    .wallFrame img.back{ width:100%; display:block; height:auto; }
-    .wallFrame img.front{
-      position:absolute; right: 10px; bottom: 10px;
-      width: 90px; height: 120px;
-      object-fit: cover;
-      border-radius: 12px; border: 2px solid rgba(255,255,255,.95);
-      box-shadow: 0 10px 18px rgba(0,0,0,.35);
-      background: #222;
-    }
-    .placard{
-      padding: 10px 12px;
-      border-top: 1px solid #eee;
-      font-size: 12px;
-    }
-    .placard .cap{ font-weight: 600; }
-    .placard .date{ opacity:.75; margin-top: 2px; }
 
     /* Book Preview */
-    #bookWrap{ display:none; gap: 14px; }
-    #bookSidebar{
+    #bookWrap {
+      display: none;
+      gap: 14px;
+    }
+
+    #bookSidebar {
       width: 240px;
       min-width: 220px;
       border-right: 1px solid #eee;
       padding-right: 10px;
     }
-    #bookSidebar .chapterBtn{
+
+    #bookSidebar .chapterBtn {
       border: 1px solid #ddd;
       border-radius: 12px;
       padding: 10px 10px;
       margin: 0 0 10px;
-      cursor:pointer;
-      background:#fff;
+      cursor: pointer;
+      background: #fff;
     }
-    #bookSidebar .chapterBtn.active{
-      background:#433924; color:#fff; border-color:#111;
+
+    #bookSidebar .chapterBtn.active {
+      background: #433924;
+      color: #fff;
+      border-color: #111;
     }
-    #bookMain{ flex: 1; min-width: 0; }
-    .bookControls{ display:flex; gap:10px; align-items:center; flex-wrap: wrap; margin: 0 0 12px; }
-    .bookPage{
-      background:#fff;
+
+    #bookMain {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .bookSidebar {
+      width: 240px;
+      padding: 16px;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+      background: #fdfdfd;
+    }
+
+    .bookPageHost {
+      flex: 1;
+      padding: 40px;
+      overflow-y: auto;
+      background: #eee;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+
+    /* Yearbook Spread Styling */
+    .bookSpread {
+      display: flex;
+      gap: 0;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      background: #fff;
+      transition: transform 0.3s ease;
+    }
+
+    .bookPage {
+      width: 440px;
+      min-height: 580px;
+      padding: 30px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
       border: 1px solid #eee;
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.12);
-      max-width: 920px;
     }
-    .bookGrid{
-      display:grid;
-      gap: 14px;
-      grid-template-columns: repeat(2, minmax(0,1fr));
+
+    .bookPage.left {
+      border-right: 1px solid #ddd;
+      border-radius: 4px 0 0 4px;
     }
-    @media (max-width: 900px){ .bookGrid{ grid-template-columns: 1fr; } }
-    .bookPhoto{
+
+    .bookPage.right {
+      border-left: 1px solid #ddd;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .titlePage {
+      width: 440px;
+      height: 580px;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 40px;
+      border-radius: 4px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .dividerPage {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+    }
+
+    .bookControls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0 0 12px;
+    }
+
+    .bookGrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+    }
+
+    .bookPhoto {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    @media (max-width: 900px) {
+      .bookGrid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .bookPhoto {
       border: 1px solid #eee;
       border-radius: 14px;
-      overflow:hidden;
-      background:#fafafa;
+      overflow: hidden;
+      background: #fafafa;
     }
-    .bookPhoto .frame{
+
+    .bookPhoto .frame {
       height: 260px;
     }
-    .bookCaption{
+
+    .bookCaption {
       padding: 10px 12px;
       font-size: 12px;
     }
 
-    @media print{
-      header, .tabs, .row, #view-timeline, #view-mosaic { display:none!important; }
-      #view-favorites{ display:block!important; }
-      #bookWrap{ display:block!important; }
-      #bookSidebar, .bookControls{ display:none!important; }
-      .bookPage{ box-shadow:none; border:none; padding: 0; }
-      body{ margin: 0; }
+    /* Realmoji Wall Interactive Bubble Layout */
+    .realmojiWall {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      padding: 60px 20px;
+      perspective: 1200px;
+      background: radial-gradient(circle at center, #ffffff 0%, #f0f0f0 100%);
+      min-height: calc(100vh - 120px);
+    }
+
+    .emojiBubble {
+      --size: 140px;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      background: #fff;
+      border: 6px solid #fff;
+      box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.1),
+        inset 0 -8px 15px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      animation: floatBubble var(--duration, 6s) infinite ease-in-out;
+      animation-delay: var(--delay, 0s);
+      transform: rotate(var(--rotation, 0deg));
+    }
+
+    .emojiBubble::after {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 15%;
+      width: 25%;
+      height: 25%;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      filter: blur(4px);
+    }
+
+    .emojiBubble:hover {
+      transform: scale(1.3) translateY(-20px) rotate(var(--hover-rotation, 5deg));
+      box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.25),
+        0 0 20px rgba(255, 255, 255, 1);
+      z-index: 100;
+      border-color: #000;
+      animation-play-state: paused;
+    }
+
+    .emojiBubble img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    @keyframes floatBubble {
+
+      0%,
+      100% {
+        transform: translateY(0) rotate(var(--rotation, 0deg));
+      }
+
+      50% {
+        transform: translateY(-25px) rotate(calc(var(--rotation, 0deg) + 5deg));
+      }
+    }
+
+    @media print {
+
+      header,
+      .tabs,
+      .row,
+      .view {
+        width: 100%;
+        height: 100%;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+
+      /* World Tour Popup Styles */
+      .leaflet-popup-content-wrapper {
+        background: #000 !important;
+        color: #fff !important;
+        border-radius: 16px !important;
+        padding: 0 !important;
+      }
+
+      .leaflet-popup-content {
+        margin: 0 !important;
+        width: auto !important;
+      }
+
+      .leaflet-popup-tip {
+        background: #000 !important;
+      }
+
+      .leaflet-container a.leaflet-popup-close-button {
+        color: #fff !important;
+        padding: 8px !important;
+      }
+
+      #view-favorites {
+        display: block !important;
+      }
+
+      #bookSidebar,
+      .bookControls,
+      .bookPageInfo {
+        display: none !important;
+      }
+
+      .bookPageHost {
+        background: none !important;
+        padding: 0 !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+
+      .bookSpread {
+        display: block !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        page-break-after: always;
+      }
+
+      .bookPage {
+        width: 100% !important;
+        min-height: 0 !important;
+        height: auto !important;
+        page-break-after: always;
+        border: none !important;
+        padding: 1in !important;
+      }
+
+      .titlePage {
+        width: 100% !important;
+        height: 100vh !important;
+        page-break-after: always;
+      }
+
+      body {
+        margin: 0;
+      }
     }
 
     /* Eras */
-    #eraWrap{ display:none; }
-    .eraTwoCol{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 920px){ .eraTwoCol{ grid-template-columns: 1fr; } }
-    .eraCard{
+    #eraWrap {
+      display: none;
+    }
+
+    .eraTwoCol {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 920px) {
+      .eraTwoCol {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .eraCard {
       border: 1px solid #ddd;
       border-radius: 14px;
       padding: 12px;
-      background:#fff;
+      background: #fff;
     }
-    .eraCard h3{ margin: 0 0 4px; font-size: 14px; }
-    .eraCard .muted{ margin-top: 4px; }
-    .eraListItem{
+
+    .eraCard h3 {
+      margin: 0 0 4px;
+      font-size: 14px;
+    }
+
+    .eraCard .muted {
+      margin-top: 4px;
+    }
+
+    .eraListItem {
       border: 1px solid #eee;
       border-radius: 12px;
       padding: 10px;
       margin: 10px 0 0;
-      display:flex;
+      display: flex;
       gap: 10px;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      background:#fafafa;
+      background: #fafafa;
     }
-    .eraWarn{ color:#b45309; font-size: 12px; }
+
+    .eraWarn {
+      color: #b45309;
+      font-size: 12px;
+    }
 
     /* ===== Museum Wall v2 (classy frames + varied sizes) ===== */
 
-    #museumWallWrap { display:none; }
+    #museumWallWrap {
+      display: none;
+    }
 
     .museumWall {
-    /* "gallery wall" background */
-    padding: 18px;
-    border-radius: 18px;
-    background:
-        radial-gradient(1200px 600px at 20% 0%, rgba(255,255,255,.10), transparent 60%),
-        radial-gradient(900px 500px at 80% 20%, rgba(255,255,255,.08), transparent 60%),
-        linear-gradient(180deg, #171717, #111);
-    border: 1px solid rgba(255,255,255,.06);
-    box-shadow: 0 18px 60px rgba(0,0,0,.35);
-    overflow: hidden;
+      /* Gallery Light Theme */
+      padding: 18px;
+      border-radius: 4px;
+      /* Slight rounding on wall itself */
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(255, 255, 255, 0.4), transparent 60%),
+        linear-gradient(180deg, #eaeae5, #dedbd0);
+      border: 1px solid #dcdcdc;
+      box-shadow:
+        inset 0 0 60px rgba(0, 0, 0, 0.05),
+        0 12px 40px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
     }
 
     /* Use CSS grid for deliberate "wall" composition */
-   .museumWallGrid {
-        display: grid;
-        gap: 26px;
-        grid-auto-flow: dense;
+    .museumWallGrid {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 16px;
+      /* Horizontal scrolling magic */
+      grid-auto-flow: column dense;
+      /* 3:4 Aspect Ratio Base Unit: 180px x 240px */
+      grid-template-rows: repeat(6, 240px);
+      /* 6 rows of fixed height */
+      grid-auto-columns: 180px;
+      /* Base column width */
 
-        /* BIG frames */
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        }
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 10px;
 
-        /* Responsive but still BIG */
-        @media (max-width: 1200px) {
-        .museumWallGrid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        }
-        @media (max-width: 800px) {
-        .museumWallGrid {
-            grid-template-columns: repeat(1, 1fr);
-        }
-        }
+      /* Ensure it takes up space horizontally but fits vertically */
+      height: calc(6 * 240px + 5 * 16px + 20px);
+    }
 
-    /* MASSIVE hero statement pieces */
+    /* Adjust container to allow scroll */
+    .museumWall {
+      padding: 18px;
+      border-radius: 18px;
+      /* Background same as before */
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(255, 255, 255, .10), transparent 60%),
+        radial-gradient(900px 500px at 80% 20%, rgba(255, 255, 255, .08), transparent 60%),
+        linear-gradient(180deg, #171717, #111);
+      border: 1px solid rgba(255, 255, 255, .06);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, .35);
+      overflow: hidden;
+      /* Hide outer overflow */
+    }
+
+    /* Size variants - mapped to row/column spans 
+       Standard unit: 1x1 = 180px x 180px
+    */
     .wallSize-hero {
-    grid-column: span 4;
-    grid-row: span 3;
-    min-height: 1500px;
+      grid-column: span 3;
+      grid-row: span 3;
     }
 
-    /* Big gallery anchors */
     .wallSize-large {
-    grid-column: span 3;
-    grid-row: span 2;
-    min-height: 1000px;
+      grid-column: span 2;
+      grid-row: span 2;
     }
 
-    /* Normal framed photos */
     .wallSize-medium {
-    grid-column: span 2;
-    grid-row: span 2;
-    min-height: 900px;
+      grid-column: span 2;
+      grid-row: span 2;
     }
 
-    /* Small accents (still readable) */
     .wallSize-small {
-    grid-column: span 1;
-    grid-row: span 1;
-    min-height: 700px;
+      grid-column: span 1;
+      grid-row: span 1;
     }
 
-    /* Rare minis */
     .wallSize-mini {
-    grid-column: span 1;
-    grid-row: span 1;
-    min-height: 1000px;
+      grid-column: span 1;
+      grid-row: span 1;
     }
 
+    /* Remove old media queries that changed column count since we are row-based now */
+    /* Adjust row heights for smaller screens if needed to fit vertical space */
+    /* Adjust row heights for smaller screens if needed to fit vertical space
+       Maintain 3:4 ratio for smaller screens too
+    */
+    @media (max-height: 900px) {
+      .museumWallGrid {
+        /* Base 140px width -> 186px height? Let's try 140x180 approx */
+        grid-template-rows: repeat(6, 186px);
+        grid-auto-columns: 140px;
+        height: calc(6 * 186px + 5 * 16px + 20px);
+      }
+    }
 
-    /* Size variants */
-    .wallSize-hero   { grid-column: span 6; grid-row: span 6; }
-    .wallSize-large  { grid-column: span 4; grid-row: span 4; }
-    .wallSize-medium { grid-column: span 3; grid-row: span 3; }
-    .wallSize-small  { grid-column: span 2; grid-row: span 2; }
-    .wallSize-mini   { grid-column: span 2; grid-row: span 1; }
-
-    @media (max-width: 680px) {
-    .wallSize-hero   { grid-column: span 6; grid-row: span 5; }
-    .wallSize-large  { grid-column: span 4; grid-row: span 4; }
-    .wallSize-medium { grid-column: span 3; grid-row: span 3; }
-    .wallSize-small  { grid-column: span 3; grid-row: span 2; }
-    .wallSize-mini   { grid-column: span 2; grid-row: span 1; }
+    @media (max-height: 700px) {
+      .museumWallGrid {
+        /* Base 110px width -> 146px height */
+        grid-template-rows: repeat(6, 146px);
+        grid-auto-columns: 110px;
+        height: calc(6 * 146px + 5 * 16px + 20px);
+      }
     }
 
     /* The frame: wood/black options, matting, bevel */
+    /* The frame: wood/black options, matting, bevel */
     .wallFrame {
-    position: relative;
-    border-radius: 14px;
-    cursor: pointer;
-    transform: rotate(var(--rot, 0deg)) translateZ(0);
-    transition: transform .22s ease, box-shadow .22s ease;
-    box-shadow:
-        0 24px 70px rgba(0,0,0,.35),
-        0 10px 22px rgba(0,0,0,.25);
+      position: relative;
+      border-radius: 2px;
+      /* Nearly square */
+      cursor: pointer;
+      transform: rotate(var(--rot, 0deg)) translateZ(0);
+      transition: transform .22s ease, box-shadow .22s ease;
+      box-shadow:
+        0 12px 24px rgba(0, 0, 0, .20),
+        0 4px 8px rgba(0, 0, 0, .15);
     }
 
     /* "Frame" layer (outer) */
-    .wallFrame::before{
-    content:"";
-    position:absolute; inset:0;
-    border-radius: 14px;
-    background: var(--frameFill, linear-gradient(180deg, #2b2b2b, #0f0f0f));
-    box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.08),
-        inset 0 2px 10px rgba(255,255,255,.08),
-        inset 0 -10px 18px rgba(0,0,0,.35);
+    .wallFrame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 2px;
+      /* Dark frame against light wall */
+      background: var(--frameFill, linear-gradient(135deg, #222, #111));
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 2px 2px 2px rgba(0, 0, 0, 0.5);
     }
 
     /* "Mat" layer (inner) */
-    .wallFrame::after{
-    content:"";
-    position:absolute;
-    inset: 12px;
-    border-radius: 10px;
-    background: linear-gradient(180deg, #f3f1ea, #e9e5da);
-    box-shadow:
-        inset 0 0 0 1px rgba(0,0,0,.12),
-        inset 0 12px 18px rgba(0,0,0,.06);
+    .wallFrame::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 1px;
+      background: #fdfbf7;
+      /* Very clean white mat */
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, .15);
     }
 
     /* Inner content window */
     .wallWindow {
-    position: relative;
-    z-index: 2;
-    margin: 22px;             /* mat thickness */
-    border-radius: 10px;
-    overflow: hidden;
-    background: #000;
-    box-shadow:
-        0 0 0 1px rgba(0,0,0,.22),
-        inset 0 0 0 1px rgba(255,255,255,.08);
+      position: relative;
+      z-index: 2;
+      margin: 24px;
+      /* thicker mat */
+      border-radius: 0;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.1);
     }
 
     /* Image fit */
     .wallWindow img.back {
-    width: 100%;
-    height: 100%;
-    display:block;
-    object-fit: cover;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      /* CHANGED from cover to cover (already cover, but ratio matches now) */
     }
 
     /* little "BeReal front" inside the same framed piece */
-    .wallWindow img.front{
-    position:absolute;
-    right: 10px;
-    bottom: 10px;
-    width: 26%;
-    aspect-ratio: 3/4;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid rgba(255,255,255,.92);
-    box-shadow: 0 12px 18px rgba(0,0,0,.40);
-    background:#222;
+    .wallWindow img.front {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      width: 26%;
+      aspect-ratio: 3/4;
+      object-fit: cover;
+      border-radius: 1px;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, .25);
+      background: #eee;
     }
 
     /* Hover feel */
-    .wallFrame:hover{
-    transform: rotate(var(--rot, 0deg)) translateY(-2px);
-    box-shadow:
-        0 30px 90px rgba(0,0,0,.45),
-        0 12px 28px rgba(0,0,0,.30);
+    .wallFrame:hover {
+      transform: rotate(var(--rot, 0deg)) translateY(-2px);
+      box-shadow:
+        0 30px 90px rgba(0, 0, 0, .45),
+        0 12px 28px rgba(0, 0, 0, .30);
     }
 
     /* Placard (gallery label) */
-    .wallPlacard{
-    margin-top: 8px;
-    padding: 8px 10px;
-    color: rgba(255,255,255,.92);
-    font-size: 12px;
-    letter-spacing: .2px;
-    display:flex;
-    flex-direction: column;
-    gap: 2px;
-    opacity: .92;
+    .wallPlacard {
+      margin-top: 8px;
+      padding: 8px 10px;
+      color: rgba(255, 255, 255, .92);
+      font-size: 12px;
+      letter-spacing: .2px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: .92;
     }
-    .wallPlacard .cap{
-    font-weight: 650;
+
+    .wallPlacard .cap {
+      font-weight: 650;
     }
-    .wallPlacard .date{
-    opacity: .75;
-    font-size: 12px;
+
+    .wallPlacard .date {
+      opacity: .75;
+      font-size: 12px;
     }
+
     .wallWindow {
-    position: relative;
-    z-index: 2;
-    margin: 16px;          /* ↓ was too thick */
-    border-radius: 10px;
-    overflow: hidden;
-    background: #000;
+      position: relative;
+      z-index: 2;
+      margin: 16px;
+      /* ↓ was too thick */
+      border-radius: 10px;
+      overflow: hidden;
+      background: #000;
     }
+
     .wallSize-hero .wallWindow {
-        margin: 12px;
+      margin: 12px;
+    }
+
+    /* Hover feel */
+    .wallFrame:hover {
+      transform: rotate(var(--rot, 0deg)) scale(1.02);
+      z-index: 10;
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, .25),
+        0 8px 16px rgba(0, 0, 0, .15);
+    }
+
+    .wallPlacard {
+      margin-top: 8px;
+      padding: 4px 6px;
+      color: #333;
+      /* Dark text for light wall */
+      font-size: 11px;
+      letter-spacing: .2px;
+      text-transform: uppercase;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.7);
+      display: inline-block;
+      border-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .wallPlacard .date {
+      font-weight: 400;
+      color: #666;
+      display: block;
+      font-size: 10px;
+    }
+
+    .wallSize-hero .wallWindow {
+      margin: 32px;
+      /* larger mat for hero */
     }
 
     /* Reduce motion option */
-    .wallReduceMotion .wallFrame { transform: none !important; transition: none !important; }
-    .wallReduceMotion .wallFrame:hover { transform: none !important; }
+    .wallReduceMotion .wallFrame {
+      transform: none !important;
+      transition: none !important;
+    }
 
+    .wallReduceMotion .wallFrame:hover {
+      transform: none !important;
+    }
+
+    /* Stats View */
+    .statsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      padding-bottom: 40px;
+    }
+
+    .statCard {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #eee;
+      display: flex;
+      flex-direction: column;
+      /* align-items: center; text-align: center; */
+    }
+
+    .statCard h3 {
+      margin: 0 0 16px 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #888;
+      font-weight: 600;
+    }
+
+    .statBig {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .statSub {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .statList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+    }
+
+    .statList li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f5f5f5;
+      font-size: 14px;
+    }
+
+    .statList li:last-child {
+      border-bottom: none;
+    }
+
+    .statChartBar {
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+
+    .statChartFill {
+      height: 100%;
+      background: #111;
+      border-radius: 3px;
+    }
   </style>
 </head>
+
 <body>
   <header>
     <h1>BeReal Museum (Posts)</h1>
@@ -521,9 +1144,12 @@
 
   <main>
     <div class="tabs">
-      <div class="tab active" data-view="timeline">Timeline</div>
-      <div class="tab" data-view="favorites">Favorites</div>
-      <div class="tab" data-view="mosaic">Mosaic</div>
+      <button class="tab" id="tab-timeline" data-view="timeline">Timeline</button>
+      <button class="tab" id="tab-favorites" data-view="favorites">Favorites</button>
+      <button class="tab" id="tab-mosaic" data-view="mosaic">Mosaic</button>
+      <button class="tab" id="tab-stats" data-view="stats">Stats</button>
+      <button class="tab" id="tab-worldtour" data-view="worldtour">World Tour</button>
+      <button class="tab" id="tab-realmojiwall" data-view="realmojiwall">Realmoji Wall</button>
     </div>
 
     <!-- Timeline -->
@@ -532,6 +1158,7 @@
         <button class="btn" id="tlModeGrid" disabled>Grid</button>
         <button class="btn" id="tlModeStrip" disabled>Strip</button>
         <button class="btn" id="tlModeOnThisDay" disabled>On this day</button>
+        <button class="btn" id="tlModeManager" disabled>⚡ Manager</button>
 
         <span style="flex:1"></span>
 
@@ -549,9 +1176,18 @@
 
       <div class="row" id="tlOnThisDayControls" style="display:none; margin: 0 0 12px;">
         <select id="tlMonthPick" class="btn">
-          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Apr</option>
-          <option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Aug</option>
-          <option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+          <option value="1">Jan</option>
+          <option value="2">Feb</option>
+          <option value="3">Mar</option>
+          <option value="4">Apr</option>
+          <option value="5">May</option>
+          <option value="6">Jun</option>
+          <option value="7">Jul</option>
+          <option value="8">Aug</option>
+          <option value="9">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
         </select>
         <select id="tlDayPick" class="btn"></select>
         <span class="hint">Shows posts taken on that month/day (across all years).</span>
@@ -584,26 +1220,34 @@
           <option value="">All labels</option>
         </select>
 
-        <input id="labelSearch"
-          placeholder="Search labels/text…"
-          style="padding:8px 10px;border:1px solid #ddd;border-radius:10px;font-size:13px;min-width:220px"
-          disabled />
+        <input id="labelSearch" placeholder="Search labels/text…"
+          style="padding:8px 10px;border:1px solid #ddd;border-radius:10px;font-size:13px;min-width:220px" disabled />
 
         <span class="muted" id="favCount"></span>
       </div>
 
       <div class="row" id="onThisDayControls" style="display:none; margin: 0 0 12px;">
         <select id="monthPick" class="btn">
-          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option><option value="4">Apr</option>
-          <option value="5">May</option><option value="6">Jun</option><option value="7">Jul</option><option value="8">Aug</option>
-          <option value="9">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+          <option value="1">Jan</option>
+          <option value="2">Feb</option>
+          <option value="3">Mar</option>
+          <option value="4">Apr</option>
+          <option value="5">May</option>
+          <option value="6">Jun</option>
+          <option value="7">Jul</option>
+          <option value="8">Aug</option>
+          <option value="9">Sep</option>
+          <option value="10">Oct</option>
+          <option value="11">Nov</option>
+          <option value="12">Dec</option>
         </select>
         <select id="dayPick" class="btn"></select>
         <span class="hint">Shows favorites taken on that month/day (across all years).</span>
       </div>
 
       <!-- Grid -->
-      <div id="favoritesGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;"></div>
+      <div id="favoritesGrid"
+        style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;"></div>
 
       <!-- Strip -->
       <div id="favoritesStrip" style="display:none"></div>
@@ -653,7 +1297,8 @@
             <h3>Manage Eras</h3>
             <div class="muted">Eras are stored in localStorage under <code>bereal_eras</code>.</div>
             <div class="row" style="margin-top:10px;">
-              <input id="eraName" class="btn" style="flex:1; min-width: 220px;" placeholder="Era name (e.g., College)" />
+              <input id="eraName" class="btn" style="flex:1; min-width: 220px;"
+                placeholder="Era name (e.g., College)" />
               <input id="eraStart" class="btn" type="date" />
               <input id="eraEnd" class="btn" type="date" />
               <button class="btn" id="eraAdd">Add</button>
@@ -679,12 +1324,196 @@
                 <button class="btn" id="eraBack">← Back to eras</button>
                 <span class="muted" id="eraBrowseTitle"></span>
               </div>
-              <div id="eraBrowseGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;"></div>
+              <div id="eraBrowseGrid"
+                style="display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px;"></div>
             </div>
           </div>
         </div>
       </div>
+    </section>
 
+    <!-- Stats -->
+    <section id="view-stats" style="display:none">
+      <div class="statsGrid">
+
+        <!-- Hero Stats -->
+        <div class="statCard" style="grid-column: span 2;">
+          <h3>Your Journey</h3>
+          <div style="display:flex; gap:32px; flex-wrap:wrap;">
+            <div>
+              <div class="statBig" id="stStartDay">-</div>
+              <div class="statSub">First Post</div>
+            </div>
+            <div>
+              <div class="statBig" id="stDuration">-</div>
+              <div class="statSub">Time on BeReal</div>
+            </div>
+            <div>
+              <div class="statBig" id="stTotal">-</div>
+              <div class="statSub">Total Memories</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streak -->
+        <div class="statCard">
+          <h3>Longest Streak</h3>
+          <div class="statBig" id="stStreak">-</div>
+          <div id="stStreakDates" style="font-size:12px; color:#666; font-style:italic; margin-bottom:12px;"></div>
+
+          <div style="border-top:1px solid #eee; padding-top:12px; margin-top:12px;">
+            <div class="statSub">Longest Dry Spell</div>
+            <div class="statBig" style="font-size:20px;" id="stDrySpell">-</div>
+            <div id="stDrySpellDates" style="font-size:12px; color:#666; font-style:italic;"></div>
+          </div>
+        </div>
+
+        <!-- Consistency -->
+        <div class="statCard">
+          <h3>Consistency</h3>
+          <div class="statBig" id="stPercent">-</div>
+          <div class="statSub">Of days since start</div>
+          <div style="margin-top:12px; font-size:13px; color:#555;">
+            Multiple Posts: <strong id="stMulti">-</strong> days
+          </div>
+          <div style="margin-top:16px;">
+            <canvas id="chartConsistency" style="width:100%; height:150px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Punctuality -->
+        <div class="statCard" style="grid-column: span 1;">
+          <h3>Punctuality</h3>
+          <div class="statBig" id="stOnTime">-</div>
+          <div class="statSub">On Time Percentage</div>
+
+          <div style="margin-top:16px; border-top:1px solid #eee; padding-top: 12px;">
+            <ul class="statList" style="margin-top:12px;">
+              <li><span>Most Punctual</span> <strong id="stPrimeTime">-</strong></li>
+              <li><span>Toughest Hour</span> <strong id="stToughTime">-</strong></li>
+              <li><span>Median Reaction</span> <strong id="stAvgReaction">-</strong></li>
+              <li><span>Personal Best</span> <strong id="stFastestReaction">-</strong></li>
+            </ul>
+            <div style="margin-top:12px; font-size:12px; color:#888;">On-Time % vs Notification Hour</div>
+            <canvas id="chartPunctuality" style="width:100%; height:140px; margin-top:8px;"></canvas>
+          </div>
+
+          <div style="margin-top:16px; font-size:12px; color:#aaa; border-top:1px solid #fafafa; padding-top:8px;">
+            On Time / Total Days: <strong id="stMemoryCount">-</strong>
+          </div>
+        </div>
+
+        <!-- Top Day -->
+        <div class="statCard">
+          <h3>Busiest Day</h3>
+          <div class="statBig" id="stBusyCount">-</div>
+          <div class="statSub" id="stBusyDate">-</div>
+          <button class="btn" id="stBusyBtn" style="margin-top:12px; align-self:start;">View Posts</button>
+        </div>
+
+        <!-- Day of Week Analysis -->
+        <div class="statCard">
+          <h3>Weekly Habits</h3>
+          <ul class="statList" style="margin-bottom:16px;">
+            <li><span>Most Consistent</span> <strong id="stWeekMost">-</strong></li>
+            <li><span>Least Consistent</span> <strong id="stWeekLeast">-</strong></li>
+          </ul>
+          <canvas id="chartWeekly" style="width:100%; height:160px;"></canvas>
+        </div>
+
+        <!-- Month Analysis -->
+        <div class="statCard">
+          <h3>Month Analysis</h3>
+          <ul class="statList" style="margin-bottom:12px;">
+            <li><span>Most Active</span> <strong id="stMonthMost">-</strong></li>
+            <li><span>Least Active</span> <strong id="stMonthLeast">-</strong></li>
+          </ul>
+          <div style="margin-top:12px; font-size:12px; color:#888;">Monthly Activity Intensity</div>
+          <canvas id="chartMonthHeatmap" style="width:100%; height:100px; margin-top:8px;"></canvas>
+        </div>
+
+        <!-- Time Machine -->
+        <div class="statCard" style="grid-column: span 2;">
+          <h3>Time Machine</h3>
+          <div style="display:flex; gap:32px; flex-wrap:wrap; align-items:center; margin-bottom:20px;">
+            <div>
+              <div class="statSub">Earliest Post</div>
+              <div class="statBig" style="font-size:24px;" id="stTimeEarly">-</div>
+            </div>
+            <div>
+              <div class="statSub">Latest Post</div>
+              <div class="statBig" style="font-size:24px;" id="stTimeLate">-</div>
+            </div>
+            <div>
+              <div class="statSub">Peak Hour</div>
+              <div class="statBig" style="font-size:24px;" id="stTimePeak">-</div>
+            </div>
+          </div>
+          <canvas id="chartScatter"
+            style="width:100%; height:280px; background:#fafafa; border-radius:12px; border:1px solid #eee;"></canvas>
+        </div>
+
+        <!-- NEW: Retakes -->
+        <div class="statCard">
+          <h3>Retake King/Queen</h3>
+          <div class="statBig" id="stRetakeTotal">-</div>
+          <div class="statSub">Total Retakes</div>
+          <div style="margin-top:12px; font-size:13px; color:#555;">
+            Max on one post: <strong id="stRetakeMax">-</strong>
+          </div>
+          <div style="font-size:13px; color:#555;">
+            Avg/Post: <strong id="stRetakeAvg">-</strong>
+          </div>
+        </div>
+
+        <!-- Social Circle -->
+        <div class="statCard">
+          <h3>Social Circle</h3>
+          <div class="statBig" id="stFriendCount">-</div>
+          <div class="statSub">Total Friends</div>
+          <ul class="statList" style="margin-top:16px;">
+            <li><span>Oldest (BFF)</span> <strong id="stFriendOldest">-</strong></li>
+            <li style="font-size:11px; color:#888; margin-bottom:8px;"><span id="stFriendOldestDate"></span></li>
+
+            <li><span>Newest Friend</span> <strong id="stFriendNewest">-</strong></li>
+            <li style="font-size:11px; color:#888; margin-bottom:8px;"><span id="stFriendNewestDate"></span></li>
+
+            <li><span>Added This Year</span> <strong id="stFriendYear">-</strong></li>
+            <li><span>Growth Velocity</span> <strong id="stFriendVelocity">-</strong></li>
+          </ul>
+        </div>
+
+        <!-- NEW: Social Activity -->
+        <div class="statCard">
+          <h3>Social Activity</h3>
+          <div class="statBig" id="stCommentCount">-</div>
+          <div class="statSub">Total Comments</div>
+          <div style="margin-top:12px; font-size:13px; color:#555;">
+            Unique Realmojis: <strong id="stRealmojiCount">-</strong>
+          </div>
+        </div>
+
+        <!-- NEW: Locations & Night Owl -->
+        <div class="statCard">
+          <h3>Habits & Travels</h3>
+          <ul class="statList">
+            <li><span>Unique Locations</span> <strong id="stLocCount">-</strong></li>
+            <li><span>Night Owl Posts</span> <strong id="stNightOwl">-</strong></li>
+          </ul>
+          <div class="statSub" style="margin-top:8px;">(10PM - 4AM local)</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Section 6: World Tour -->
+    <section id="viewWorldTour" style="display:none">
+      <div id="map" style="width: 100%; height: calc(100vh - 120px); border-radius: 12px; background: #f0f0f0;"></div>
+    </section>
+
+    <!-- Section 7: Realmoji Wall -->
+    <section id="viewRealmojiWall" style="display:none">
+      <div id="realmojiWall" class="realmojiWall"></div>
     </section>
 
     <!-- Story modal -->
@@ -723,9 +1552,12 @@
             <button class="storyBtn" id="reelNext">→</button>
             <select class="storyBtn" id="reelSpeed">
               <option value="2000">2s</option>
+              <option value="1000">Fast (1s)</option>
+              <option value="500">Speedrun (0.5s)</option>
               <option value="3000" selected>3s</option>
               <option value="4000">4s</option>
             </select>
+            <button id="reelRecord" class="btn" title="Download Video">⬇️ 🎥</button>
             <label class="storyBtn" style="display:inline-flex; gap:8px; align-items:center;">
               <input id="reelShowLabels" type="checkbox" checked />
               Labels
@@ -733,6 +1565,10 @@
             <label class="storyBtn" style="display:inline-flex; gap:8px; align-items:center;">
               <input id="reelMusic" type="checkbox" />
               Music
+            </label>
+            <label class="storyBtn" style="display:inline-flex; gap:8px; align-items:center;">
+              Custom Audio
+              <input id="reelAudioFile" type="file" accept="audio/*" style="display:none" />
             </label>
           </div>
           <button class="storyBtn" id="reelClose">✕</button>
@@ -755,15 +1591,118 @@
       <div class="row" style="margin: 8px 0 14px;">
         <button class="btn" id="buildMosaic" disabled>Build mosaic</button>
         <button class="btn" id="shuffleMosaic" disabled>Shuffle</button>
-        <span class="muted">Scroll to zoom • Drag to pan</span>
+        <label class="btn" style="display:inline-flex; gap:8px; align-items:center;">
+          Target Image
+          <input id="mosaicTarget" type="file" accept="image/*" style="display:none" />
+        </label> <span class="muted">Scroll to zoom • Drag to pan</span>
       </div>
       <div id="mosaicWrap">
         <canvas id="mosaic"></canvas>
       </div>
     </section>
 
+    <!-- NEW: Bulk Manager Modal -->
+    <div id="favManagerModal"
+      style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:11000; align-items:center; justify-content:center; padding:18px;">
+      <div class="managerBox"
+        style="background:#fff; width:min(600px, 100%); max-height:90vh; border-radius:18px; overflow-y:auto; display:flex; flex-direction:column; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+
+        <div
+          style="padding:16px 20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:#fff; z-index:10;">
+          <h2 style="margin:0; font-size:18px; font-weight:600;">Bulk Favorite Manager</h2>
+          <button class="btn" id="mgrClose" style="border:none; font-size:18px; padding:4px 8px;">✕</button>
+        </div>
+
+        <div style="padding:20px; display:flex; flex-direction:column; gap:24px;">
+
+          <!-- Days Filter -->
+          <div>
+            <div class="row" style="margin-bottom:12px; justify-content:space-between;">
+              <span style="font-weight:600">Days of Week</span>
+              <label class="btn" style="padding:4px 8px; font-size:12px;"><input type="checkbox" id="mgrDayAll" checked>
+                Select All</label>
+            </div>
+            <div class="mgrGrid" id="mgrDaysGrid"
+              style="display:grid; grid-template-columns:repeat(auto-fit, minmax(80px, 1fr)); gap:8px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Months Filter -->
+          <div>
+            <div class="row" style="margin-bottom:12px; justify-content:space-between;">
+              <span style="font-weight:600">Months</span>
+              <label class="btn" style="padding:4px 8px; font-size:12px;"><input type="checkbox" id="mgrMonthAll"
+                  checked> Select All</label>
+            </div>
+            <div class="mgrGrid" id="mgrMonthsGrid"
+              style="display:grid; grid-template-columns:repeat(auto-fit, minmax(60px, 1fr)); gap:8px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Time Filter -->
+          <div style="background:#fafafa; padding:16px; border-radius:12px;">
+            <div class="row" style="margin-bottom:12px; font-weight:600; justify-content:space-between;">
+              <span>Time Range</span>
+              <label class="btn"
+                style="padding:4px 8px; font-size:12px; display:inline-flex; gap:6px; align-items:center;">
+                <input type="checkbox" id="mgrTimeInvert"> Invert (Exclude)
+              </label>
+            </div>
+            <div class="row" style="gap:10px;">
+              <input type="time" id="mgrTimeStart" class="btn" value="09:00" style="flex:1">
+              <span style="color:#666">to</span>
+              <input type="time" id="mgrTimeEnd" class="btn" value="17:00" style="flex:1">
+            </div>
+            <div class="row" style="margin-top:12px;">
+              <button class="btn" style="font-size:12px; width:100%; text-align:center;" id="mgrPresetWork">Preset:
+                Exclude Work (M-F 9-5)</button>
+            </div>
+          </div>
+
+          <!-- Preview Grid -->
+          <div id="mgrPreviewContainer" style="display:none; border-top:1px solid #eee; padding-top:16px;">
+            <div class="row" style="margin-bottom:12px; font-weight:600; justify-content:space-between;">
+              <span>Preview Matches <span id="mgrPreviewCount"
+                  style="font-weight:400; color:#666; font-size:13px;"></span></span>
+              <button class="btn" style="padding:4px 10px; font-size:12px;" id="mgrSelectAllPreview">Select All</button>
+            </div>
+            <div style="font-size:12px; color:#666; margin-bottom:10px;">Click photos to <b>exclude</b> them from the
+              action.</div>
+            <div id="mgrPreviewGrid"
+              style="display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:10px; max-height:300px; overflow-y:auto; padding:4px;">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- Stats & Actions -->
+          <div
+            style="background:#f0f0f0; padding:16px; border-radius:12px; border:1px solid #ddd; position:sticky; bottom:0;">
+            <div style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+              <span id="mgrStats" style="font-weight:600; color:#333;">Matches: 0 posts</span>
+              <button class="btn" id="mgrShowPreview" style="font-size:12px;">👁️ Preview / Edit</button>
+            </div>
+            <div class="row" style="gap:12px;">
+              <button class="btn" id="mgrActionFav"
+                style="flex:1; background:#111; color:#fff; border-color:#111;--radius-btn:12px;">★ Favorite
+                Matches</button>
+              <button class="btn" id="mgrActionUnfav" style="flex:1; --radius-btn:12px;">☆ Unfavorite Matches</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/lib/browser.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script type="module" src="./app.js"></script>
 </body>
+
 </html>

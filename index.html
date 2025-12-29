@@ -10,16 +10,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-body: #faf9f6;
-      /* Off-white gallery */
-      --bg-card: #ffffff;
-      --text-main: #1a1a1a;
-      --text-muted: #666;
-      --accent: #111;
-      --border: #e0e0e0;
-      --radius-btn: 8px;
-      --radius-card: 16px;
+      --bg-body: #0a0a0a;
+      /* Deep museum floor */
+      --bg-card: #141414;
+      /* Exhibit frame dark */
+      --text-main: #f0f0f0;
+      /* Bright focus */
+      --text-muted: #999;
+      --accent: #c5a059;
+      /* Museum Gold */
+      --border: #2a2a2a;
+      --radius-btn: 4px;
+      --radius-card: 4px;
+      /* More architectural */
       --font-main: 'Outfit', system-ui, sans-serif;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, transparent 30%, rgba(0, 0, 0, 0.4) 100%);
+      pointer-events: none;
+      z-index: 100;
     }
 
     body {
@@ -654,6 +670,55 @@
       }
     }
 
+    /* Chart Tooltip */
+    #chartTooltip {
+      position: fixed;
+      display: none;
+      pointer-events: none;
+      background: #000;
+      color: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      z-index: 10000;
+      width: 140px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transform: translate(-50%, -100%);
+      margin-top: -15px;
+    }
+
+    #chartTooltip img {
+      width: 120px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      background: #222;
+    }
+
+    #chartTooltip .ttDate {
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    #chartTooltip .ttTime {
+      opacity: 0.7;
+    }
+
+    #chartTooltip .ttLabel {
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    #chartTooltip .ttSub {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
     @media print {
 
       header,
@@ -1132,14 +1197,451 @@
       background: #111;
       border-radius: 3px;
     }
+
+    /* View Transitions */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.4s;
+    }
+
+    /* Custom slide-fade for views */
+    .view {
+      view-transition-name: museum-view;
+    }
+
+    @keyframes slide-from-right {
+      from {
+        transform: translateX(30px);
+        opacity: 0;
+      }
+    }
+
+    @keyframes slide-to-left {
+      to {
+        transform: translateX(-30px);
+        opacity: 0;
+      }
+    }
+
+    ::view-transition-old(museum-view) {
+      animation: 0.4s ease both slide-to-left;
+    }
+
+    ::view-transition-new(museum-view) {
+      animation: 0.4s ease both slide-from-right;
+    }
+
+    @media print {
+      @page {
+        margin: 0;
+        size: auto;
+      }
+
+      body {
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      header,
+      nav,
+      .tabs,
+      .bookControls,
+      #bookSidebar,
+      .tabHost,
+      section,
+      footer,
+      .hint,
+      #chartTooltip {
+        display: none !important;
+      }
+
+      #printContainer {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .bookPage,
+      .titlePage {
+        width: 100% !important;
+        height: 100vh !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 40px !important;
+        box-sizing: border-box !important;
+        border: none !important;
+        position: relative !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+
+      .titlePage {
+        background: #000 !important;
+        color: #fff !important;
+      }
+
+      .bookGrid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 40px !important;
+        width: 100% !important;
+      }
+
+      .bookPhoto {
+        break-inside: avoid !important;
+      }
+
+      .bookPhoto .frame {
+        height: 380px !important;
+      }
+
+      .dividerPage h2 {
+        font-size: 48px !important;
+      }
+
+      img {
+        max-width: 100% !important;
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+      }
+    }
+
+    #printContainer {
+      display: none;
+    }
+
+    /* Museum Entrance Landing */
+    #entrance {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, #222 0%, #000 100%);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      transition: opacity 0.8s ease, visibility 0.8s;
+      text-align: center;
+      padding: 40px;
+    }
+
+    #entrance.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .entranceFrame {
+      border: 2px solid #c5a059;
+      /* Gold border */
+      padding: 60px;
+      border-radius: 4px;
+      position: relative;
+      background: rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 100px rgba(197, 160, 89, 0.1);
+      max-width: 600px;
+      width: 100%;
+    }
+
+    .entranceFrame::before,
+    .entranceFrame::after {
+      content: "";
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border: 2px solid #c5a059;
+    }
+
+    .entranceFrame::before {
+      top: -10px;
+      left: -10px;
+      border-right: 0;
+      border-bottom: 0;
+    }
+
+    .entranceFrame::after {
+      bottom: -10px;
+      right: -10px;
+      border-left: 0;
+      border-top: 0;
+    }
+
+    /* Decorative Columns */
+    .portalColumn {
+      position: absolute;
+      top: 10%;
+      bottom: 10%;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, #c5a059, transparent);
+      opacity: 0.3;
+    }
+
+    .portalColumn.left {
+      left: 40px;
+    }
+
+    .portalColumn.right {
+      right: 40px;
+    }
+
+    #entrance h1 {
+      font-size: 56px;
+      font-weight: 300;
+      letter-spacing: 12px;
+      text-transform: uppercase;
+      margin: 0 0 10px;
+      color: #fff;
+      text-shadow: 0 0 20px rgba(197, 160, 89, 0.5);
+    }
+
+    #entrance p {
+      font-size: 14px;
+      opacity: 0.6;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+    }
+
+    .museumTicket {
+      display: inline-block;
+      background: #c5a059;
+      color: #000;
+      padding: 16px 40px;
+      border-radius: 2px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .museumTicket:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 10px 30px rgba(197, 160, 89, 0.4);
+    }
+
+    .museumTicket::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .museumTicket:hover::after {
+      left: 150%;
+    }
+
+    .ticketStub {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #000;
+      border-radius: 50%;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .ticketStub.left {
+      left: -10px;
+    }
+
+    .ticketStub.right {
+      right: -10px;
+    }
+
+    header {
+      padding: 12px 20px;
+      background: #000;
+      color: #fff;
+      border-bottom: 1px solid #333;
+      display: none;
+      /* Initially hide the small header */
+    }
+
+    header.active {
+      display: flex;
+      border-bottom: 2px solid var(--accent);
+      box-shadow: 0 10px 40px rgba(197, 160, 89, 0.1);
+    }
+
+    /* Refined Gallery Tabs */
+    .tabs {
+      background: #111;
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #222;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .tab {
+      border: none;
+      background: transparent;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .tab.active {
+      background: var(--accent);
+      color: #000;
+      border-radius: 2px;
+    }
+
+    /* Exhibit Cards */
+    .statCard,
+    .tile,
+    .eraCard,
+    .mosaicControls,
+    .wallToolbar {
+      border: 1px solid #222 !important;
+      background: #141414 !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4) !important;
+      position: relative;
+    }
+
+    .statCard h3 {
+      color: var(--accent) !important;
+      letter-spacing: 2px;
+    }
+
+    .statBig {
+      color: #fff !important;
+    }
+
+    .btn {
+      border-radius: 2px !important;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    /* Gallery Frame Enhancement */
+    .view {
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Timeline & Favorites Grid */
+    #timelineGrid,
+    #favoritesGrid {
+      gap: 20px !important;
+    }
+
+    .tile {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .tile:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 30px 60px rgba(197, 160, 89, 0.2) !important;
+    }
+
+    /* Museum Wall Enhancements */
+    .museumWall {
+      background: #0a0a0a !important;
+    }
+
+    /* Book Preview */
+    .bookPage {
+      background: #fafaf8 !important;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+    }
+
+    /* Story Modal */
+    #storyModal,
+    #reelModal {
+      background: rgba(0, 0, 0, 0.95) !important;
+    }
+
+    /* Input & Select Styling */
+    input,
+    select,
+    textarea {
+      background: #1a1a1a !important;
+      border: 1px solid #333 !important;
+      color: #f0f0f0 !important;
+      border-radius: 2px !important;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--accent) !important;
+      outline: none;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0a0a0a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent);
+    }
   </style>
 </head>
 
 <body>
-  <header>
-    <h1>BeReal Museum (Posts)</h1>
-    <input id="file" type="file" accept=".zip" />
-    <span class="muted" id="status">Import a BeReal ZIP to begin. (Everything stays on this device.)</span>
+  <div id="entrance">
+    <div class="portalColumn left"></div>
+    <div class="portalColumn right"></div>
+    <div class="entranceFrame">
+      <h1>The BeReal Museum</h1>
+      <p>EST. 2025 • YOUR MEMORIES CURATED</p>
+
+      <label for="file" class="museumTicket">
+        <div class="ticketStub left"></div>
+        Import ZIP file
+        <div class="ticketStub right"></div>
+      </label>
+
+      <input id="file" type="file" accept=".zip" style="display:none;" />
+
+      <div id="entranceStatus" style="margin-top: 30px; font-size: 12px; opacity: 0.5; letter-spacing: 1px;">
+        UPLOAD BEREAL EXPORT ZIP
+      </div>
+    </div>
+  </div>
+
+  <header id="mainHeader">
+    <h1 style="letter-spacing: 2px; font-weight: 400;">THE BEREAL MUSEUM</h1>
+    <span class="muted" id="status" style="margin-left: auto;"></span>
   </header>
 
   <main>
@@ -1451,6 +1953,17 @@
           </div>
           <canvas id="chartScatter"
             style="width:100%; height:280px; background:#fafafa; border-radius:12px; border:1px solid #eee;"></canvas>
+          <div id="chartTooltip">
+            <img id="ttImg" src="" alt="" style="display:none;">
+            <div id="ttInfo">
+              <div class="ttDate" id="ttDate"></div>
+              <div class="ttTime" id="ttTime"></div>
+            </div>
+            <div id="ttGeneric" style="display:none;">
+              <div class="ttLabel" id="ttLabel"></div>
+              <div class="ttSub" id="ttSub"></div>
+            </div>
+          </div>
         </div>
 
         <!-- NEW: Retakes -->
@@ -1696,6 +2209,8 @@
     </div>
 
   </main>
+
+  <div id="printContainer"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/lib/browser.min.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"

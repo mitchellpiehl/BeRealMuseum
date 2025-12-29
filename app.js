@@ -205,28 +205,31 @@ if (mosaicTargetInput) {
 
 
 
-function setStatus(msg) { if (els.status) els.status.textContent = msg; }
+function setStatus(msg) {
+  if (els.status) els.status.textContent = msg;
+  const entStatus = document.getElementById("entranceStatus");
+  if (entStatus) entStatus.textContent = msg.toUpperCase();
+}
 function enable(el, ok) { if (el) el.disabled = !ok; }
 
 function setView(name) {
-  for (const [k, v] of Object.entries(els.views)) if (v) v.style.display = (k === name) ? "" : "none";
-  els.tabs.forEach(t => t.classList.toggle("active", t.dataset.view === name));
+  const update = () => {
+    for (const [k, v] of Object.entries(els.views)) if (v) v.style.display = (k === name) ? "" : "none";
+    els.tabs.forEach(t => t.classList.toggle("active", t.dataset.view === name));
 
-  if (name === "favorites") {
-    setFavMode(favMode || "grid");
-    refreshFavoritesUI();
-  }
+    if (name === "favorites") {
+      setFavMode(favMode || "grid");
+      refreshFavoritesUI();
+    }
+    if (name === "stats") renderStats();
+    if (name === "worldtour") initMap();
+    if (name === "realmojiwall") renderRealmojiWall();
+  };
 
-  if (name === "stats") {
-    renderStats();
-  }
-
-  if (name === "worldtour") {
-    initMap();
-  }
-
-  if (name === "realmojiwall") {
-    renderRealmojiWall();
+  if (document.startViewTransition) {
+    document.startViewTransition(update);
+  } else {
+    update();
   }
 }
 window.setView = setView;
@@ -321,9 +324,9 @@ function setFavMode(mode) {
   ];
   for (const [m, btn] of buttons) {
     if (!btn) continue;
-    btn.style.background = (m === favMode) ? "#111" : "#fff";
-    btn.style.color = (m === favMode) ? "#fff" : "#111";
-    btn.style.borderColor = (m === favMode) ? "#111" : "#ddd";
+    btn.style.background = (m === favMode) ? "#c5a059" : "transparent";
+    btn.style.color = (m === favMode) ? "#000" : "#999";
+    btn.style.borderColor = (m === favMode) ? "#c5a059" : "#333";
   }
 
   if (mode === "story") {
@@ -1076,6 +1079,124 @@ function paginateChapter(items) {
   return pages;
 }
 
+// Helper to render a single page container
+function createPageEl(pData, side, totalPages, pageIndex) {
+  if (pData.type === 'title') {
+    const el = document.createElement("div");
+    el.className = "titlePage";
+    el.innerHTML = `
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+        <div style="font-size:12px; letter-spacing:4px; opacity:0.6; margin-bottom:20px;">MEMORIES</div>
+        <h1 style="font-size:36px; margin:0;">${pData.title}</h1>
+        <div style="font-size:18px; margin-top:20px; opacity:0.8;">${pData.subtitle}</div>
+      </div>
+      <div style="font-size:10px; opacity:0.4; margin-bottom:20px;">CREATED WITH BEREAL MUSEUM</div>
+    `;
+    return el;
+  }
+
+  const el = document.createElement("div");
+  el.className = `bookPage ${side}`;
+
+  if (pData.type === 'travel') {
+    el.innerHTML = `
+      <div class="dividerPage">
+        <div style="font-size:40px; margin-bottom:20px;">✈️</div>
+        <h2 style="font-size:24px; margin:0 0 10px;">Travel Log</h2>
+        <div style="font-size:12px; opacity:0.6; margin-bottom:30px;">${pData.count} geotagged memories</div>
+        <div style="text-align:left; width:100%; font-size:13px; line-height:1.6;">
+          <strong>Countries:</strong> ${pData.countries.join(", ") || "Local"}<br><br>
+          <strong>Cities:</strong> ${pData.cities.join(", ")}
+        </div>
+      </div>
+    `;
+  } else if (pData.type === 'stats') {
+    el.innerHTML = `
+      <div class="dividerPage">
+        <div style="font-size:40px; margin-bottom:20px;">📊</div>
+        <h2 style="font-size:24px; margin:0 0 30px;">Year in Review</h2>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; text-align:center;">
+          <div>
+            <div style="font-size:24px; font-weight:700;">${pData.favCount}</div>
+            <div style="font-size:10px; opacity:0.6;">FAVORITES</div>
+          </div>
+          <div>
+            <div style="font-size:24px; font-weight:700;">${pData.monthCount}</div>
+            <div style="font-size:10px; opacity:0.6;">ACTIVE MONTHS</div>
+          </div>
+        </div>
+        <div style="margin-top:40px; font-size:11px; font-style:italic; opacity:0.5;">End of Record</div>
+      </div>
+    `;
+  } else if (pData.type === 'divider') {
+    const div = document.createElement("div");
+    div.className = "dividerPage";
+    div.innerHTML = `
+      <h2 style="font-size:28px; font-weight:300; letter-spacing:2px; color:#333;">${pData.label}</h2>
+      <div style="width:40px; height:1px; background:#ddd; margin:20px 0;"></div>
+    `;
+    el.appendChild(div);
+  } else if (pData.type === 'content') {
+    const header = document.createElement("div");
+    header.style.fontSize = "10px";
+    header.style.color = "#888";
+    header.style.marginBottom = "20px";
+    header.textContent = pData.label.toUpperCase();
+    el.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "bookGrid";
+    for (const it of pData.items) {
+      const note = getNote(postKey(it));
+      const hits = erasForPost(it, pData.eras || []);
+
+      const card = document.createElement("div");
+      card.className = "bookPhoto";
+      const frame = document.createElement("div");
+      frame.className = "frame";
+      const back = document.createElement("img");
+      back.className = "back";
+      back.src = it.backUrl || it.frontUrl || "";
+      frame.appendChild(back);
+      if (it.frontUrl) {
+        const front = document.createElement("img");
+        front.className = "front";
+        front.src = it.frontUrl;
+        frame.appendChild(front);
+      }
+      const cap = document.createElement("div");
+      cap.className = "bookCaption";
+      let label = (note.label || "").trim();
+      if (label.toUpperCase() === "UNTITLED") label = "";
+
+      const eraTags = hits.length ? hits.map(id => {
+        const era = (pData.eras || []).find(e => e.id === id);
+        return era ? `<span style="background:#eee; padding:2px 4px; border-radius:4px; margin-right:4px;">${era.name}</span>` : "";
+      }).join("") : "";
+
+      cap.innerHTML = `
+        <div style="font-weight:600; font-size:10px; margin-bottom:2px;">${eraTags}</div>
+        <div style="font-weight:600; font-size:11px;">${escapeHtml(label)}</div>
+        <div style="font-size:9px; opacity:0.5; margin-top:2px;">${it.date.toLocaleDateString()}</div>
+      `;
+      card.append(frame, cap);
+      grid.appendChild(card);
+    }
+    el.appendChild(grid);
+  }
+
+  const footer = document.createElement("div");
+  footer.style.position = "absolute";
+  footer.style.bottom = "20px";
+  footer.style[side === 'left' ? 'left' : 'right'] = "30px";
+  footer.style.fontSize = "9px";
+  footer.style.color = "#ccc";
+  footer.textContent = pageIndex + 1;
+  el.appendChild(footer);
+
+  return el;
+}
+
 function renderBookPage() {
   if (!els.bookPageHost) return;
 
@@ -1088,134 +1209,16 @@ function renderBookPage() {
 
   els.bookPageHost.innerHTML = "";
 
-  // Helper to render a single page container
-  const createPageEl = (pData, side) => {
-    if (pData.type === 'title') {
-      const el = document.createElement("div");
-      el.className = "titlePage";
-      el.innerHTML = `
-        <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-          <div style="font-size:12px; letter-spacing:4px; opacity:0.6; margin-bottom:20px;">MEMORIES</div>
-          <h1 style="font-size:36px; margin:0;">${pData.title}</h1>
-          <div style="font-size:18px; margin-top:20px; opacity:0.8;">${pData.subtitle}</div>
-        </div>
-        <div style="font-size:10px; opacity:0.4; margin-bottom:20px;">CREATED WITH BEREAL MUSEUM</div>
-      `;
-      return el;
-    }
-
-    const el = document.createElement("div");
-    el.className = `bookPage ${side}`;
-
-    if (pData.type === 'travel') {
-      el.innerHTML = `
-        <div class="dividerPage">
-          <div style="font-size:40px; margin-bottom:20px;">✈️</div>
-          <h2 style="font-size:24px; margin:0 0 10px;">Travel Log</h2>
-          <div style="font-size:12px; opacity:0.6; margin-bottom:30px;">${pData.count} geotagged memories</div>
-          <div style="text-align:left; width:100%; font-size:13px; line-height:1.6;">
-            <strong>Countries:</strong> ${pData.countries.join(", ") || "Local"}<br><br>
-            <strong>Cities:</strong> ${pData.cities.join(", ")}
-          </div>
-        </div>
-      `;
-    } else if (pData.type === 'stats') {
-      el.innerHTML = `
-        <div class="dividerPage">
-          <div style="font-size:40px; margin-bottom:20px;">📊</div>
-          <h2 style="font-size:24px; margin:0 0 30px;">Year in Review</h2>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; text-align:center;">
-            <div>
-              <div style="font-size:24px; font-weight:700;">${pData.favCount}</div>
-              <div style="font-size:10px; opacity:0.6;">FAVORITES</div>
-            </div>
-            <div>
-              <div style="font-size:24px; font-weight:700;">${pData.monthCount}</div>
-              <div style="font-size:10px; opacity:0.6;">ACTIVE MONTHS</div>
-            </div>
-          </div>
-          <div style="margin-top:40px; font-size:11px; font-style:italic; opacity:0.5;">End of Record</div>
-        </div>
-      `;
-    } else if (pData.type === 'divider') {
-      const div = document.createElement("div");
-      div.className = "dividerPage";
-      div.innerHTML = `
-        <h2 style="font-size:28px; font-weight:300; letter-spacing:2px; color:#333;">${pData.label}</h2>
-        <div style="width:40px; height:1px; background:#ddd; margin:20px 0;"></div>
-      `;
-      el.appendChild(div);
-    } else if (pData.type === 'content') {
-      const header = document.createElement("div");
-      header.style.fontSize = "10px";
-      header.style.color = "#888";
-      header.style.marginBottom = "20px";
-      header.textContent = pData.label.toUpperCase();
-      el.appendChild(header);
-
-      const grid = document.createElement("div");
-      grid.className = "bookGrid";
-      for (const it of pData.items) {
-        const note = getNote(postKey(it));
-        const hits = erasForPost(it, pData.eras || []);
-
-        const card = document.createElement("div");
-        card.className = "bookPhoto";
-        const frame = document.createElement("div");
-        frame.className = "frame";
-        const back = document.createElement("img");
-        back.className = "back";
-        back.src = it.backUrl || it.frontUrl || "";
-        frame.appendChild(back);
-        if (it.frontUrl) {
-          const front = document.createElement("img");
-          front.className = "front";
-          front.src = it.frontUrl;
-          frame.appendChild(front);
-        }
-        const cap = document.createElement("div");
-        cap.className = "bookCaption";
-        let label = (note.label || "").trim();
-        if (label.toUpperCase() === "UNTITLED") label = "";
-
-        const eraTags = hits.length ? hits.map(id => {
-          const era = (pData.eras || []).find(e => e.id === id);
-          return era ? `<span style="background:#eee; padding:2px 4px; border-radius:4px; margin-right:4px;">${era.name}</span>` : "";
-        }).join("") : "";
-
-        cap.innerHTML = `
-          <div style="font-weight:600; font-size:10px; margin-bottom:2px;">${eraTags}</div>
-          <div style="font-weight:600; font-size:11px;">${escapeHtml(label)}</div>
-          <div style="font-size:9px; opacity:0.5; margin-top:2px;">${it.date.toLocaleDateString()}</div>
-        `;
-        card.append(frame, cap);
-        grid.appendChild(card);
-      }
-      el.appendChild(grid);
-    }
-
-    const footer = document.createElement("div");
-    footer.style.position = "absolute";
-    footer.style.bottom = "20px";
-    footer.style[side === 'left' ? 'left' : 'right'] = "30px";
-    footer.style.fontSize = "9px";
-    footer.style.color = "#ccc";
-    footer.textContent = pages.indexOf(pData) + 1;
-    el.appendChild(footer);
-
-    return el;
-  };
-
   // We render a spread: current index and next index
   const spread = document.createElement("div");
   spread.className = "bookSpread";
 
   const leftPage = pages[idx];
-  spread.appendChild(leftPage ? createPageEl(leftPage, 'left') : document.createElement("div"));
+  spread.appendChild(leftPage ? createPageEl(leftPage, 'left', pages.length, idx) : document.createElement("div"));
 
   const rightPage = pages[idx + 1];
   if (rightPage) {
-    spread.appendChild(createPageEl(rightPage, 'right'));
+    spread.appendChild(createPageEl(rightPage, 'right', pages.length, idx + 1));
   } else if (idx > 0) {
     // Blank right page if we are at the end
     const last = document.createElement("div");
@@ -2213,7 +2216,18 @@ els.wallReduceMotion?.addEventListener("change", () => refreshFavoritesUI());
 
 els.bookPrev?.addEventListener("click", () => { bookState.pageIndex = Math.max(0, bookState.pageIndex - 2); renderBookPage(); });
 els.bookNext?.addEventListener("click", () => { bookState.pageIndex = Math.min(bookState.pages.length - 1, bookState.pageIndex + 2); renderBookPage(); });
-els.bookPrint?.addEventListener("click", () => window.print());
+els.bookPrint?.addEventListener("click", () => {
+  const container = document.getElementById("printContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  // Render every page in sequence
+  bookState.pages.forEach((p, i) => {
+    container.appendChild(createPageEl(p, i % 2 === 0 ? 'left' : 'right', bookState.pages.length, i));
+  });
+
+  window.print();
+});
 
 els.eraFilterAffects?.addEventListener("change", () => refreshFavoritesUI());
 els.eraBack?.addEventListener("click", () => {
@@ -2504,8 +2518,10 @@ els.file?.addEventListener("change", async (e) => {
           const name = userData.fullname.trim();
           const sanitized = name.endsWith("s") ? `${name}'` : `${name}'s`;
           const title = `${sanitized} BeReal Museum`;
-          const h1 = document.querySelector("header h1");
-          if (h1) h1.textContent = title;
+          const entH1 = document.querySelector("#entrance h1");
+          const mainH1 = document.querySelector("#mainHeader h1");
+          if (entH1) entH1.textContent = title;
+          if (mainH1) mainH1.textContent = title.toUpperCase();
           document.title = title;
         }
       }
@@ -2650,7 +2666,14 @@ els.file?.addEventListener("change", async (e) => {
 
     populateLabelFilter();
     renderTimeline(posts);
-    setStatus("Loaded! Click Mosaic to build the zoomable mosaic.");
+
+    // Hide entrance and show header
+    const entrance = document.getElementById("entrance");
+    const header = document.getElementById("mainHeader");
+    if (entrance) entrance.classList.add("hidden");
+    if (header) header.classList.add("active");
+
+    setStatus("Welcome to the Museum.");
   } catch (err) {
     console.error(err);
     setStatus("Error importing ZIP. See console for details.");
@@ -3025,9 +3048,11 @@ const formatYMDPretty = (ymd) => {
   });
 };
 
+let currentStats = null;
 function renderStats() {
   if (!posts.length) return;
   const stats = calculateStats(posts, friends, comments, realmojiCount, memories);
+  currentStats = stats;
 
   // Helper text
   const safeText = (id, val) => {
@@ -3464,7 +3489,8 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
     },
     scatterData: sorted.map(p => ({
       x: p.date.getTime(), // Using raw time for scatter
-      y: p.date.getHours() * 60 + p.date.getMinutes()
+      y: p.date.getHours() * 60 + p.date.getMinutes(),
+      post: p
     })),
     monthMap: monthUniqueDays.map((set, i) => ({
       month: monthsByName[i],
@@ -3475,220 +3501,213 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
 }
 
 function renderCharts(stats) {
-  // 1. Consistency Pie Chart
-  const pieEl = document.getElementById("chartConsistency");
-  if (pieEl) {
-    const ctx = pieEl.getContext("2d");
+  const tt = document.getElementById("chartTooltip");
+  const ttImg = document.getElementById("ttImg");
+  const ttInfo = document.getElementById("ttInfo");
+  const ttDate = document.getElementById("ttDate");
+  const ttTime = document.getElementById("ttTime");
+  const ttGeneric = document.getElementById("ttGeneric");
+  const ttLabel = document.getElementById("ttLabel");
+  const ttSub = document.getElementById("ttSub");
+
+  const showTT = (x, y, data) => {
+    if (!tt) return;
+    tt.style.display = "flex";
+    tt.style.left = x + "px";
+    tt.style.top = y + "px";
+
+    if (data.img) {
+      ttImg.style.display = "block";
+      ttImg.src = data.img;
+    } else {
+      ttImg.style.display = "none";
+    }
+
+    if (data.date) {
+      ttInfo.style.display = "block";
+      ttDate.textContent = data.date;
+      ttTime.textContent = data.time || "";
+    } else {
+      ttInfo.style.display = "none";
+    }
+
+    if (data.label) {
+      ttGeneric.style.display = "block";
+      ttLabel.textContent = data.label;
+      ttSub.textContent = data.sub || "";
+    } else {
+      ttGeneric.style.display = "none";
+    }
+  };
+
+  const hideTT = () => { if (tt) tt.style.display = "none"; };
+
+  // Helper for responsive canvas setup and event binding
+  const setupChart = (id, pointsAttr) => {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const ctx = el.getContext("2d");
     const dpr = window.devicePixelRatio || 1;
-    const rect = pieEl.getBoundingClientRect();
-    pieEl.width = rect.width * dpr;
-    pieEl.height = rect.height * dpr;
+    const rect = el.getBoundingClientRect();
+    el.width = rect.width * dpr;
+    el.height = rect.height * dpr;
     ctx.scale(dpr, dpr);
+    el._points = [];
+    if (!el._hasTT) {
+      el._hasTT = true;
+      el.addEventListener("mousemove", (e) => {
+        const r = el.getBoundingClientRect();
+        const mx = e.clientX - r.left;
+        const my = e.clientY - r.top;
+        let found = null;
+        for (const p of el._points || []) {
+          if (p.isRect) {
+            if (mx >= p.x && mx <= p.x + p.w && my >= p.y && my <= p.y + p.h) { found = p; break; }
+          } else if (p.isSlice) {
+            const dx = mx - p.cx;
+            const dy = my - p.cy;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            let normAngle = angle < -Math.PI / 2 ? angle + Math.PI * 2 : angle;
+            if (dist <= p.r && normAngle >= p.start && normAngle <= p.end) { found = p; break; }
+          } else {
+            const dx = mx - p.x;
+            const dy = my - p.y;
+            if (Math.sqrt(dx * dx + dy * dy) < 10) { found = p; break; }
+          }
+        }
+        if (found) showTT(r.left + (found.ttX || found.x), r.top + (found.ttY || found.y), found.data);
+        else hideTT();
+      });
+      el.addEventListener("mouseleave", hideTT);
+    }
+    return { ctx, W: rect.width, H: rect.height, el };
+  };
 
-    const W = rect.width;
-    const H = rect.height;
-    ctx.clearRect(0, 0, W, H);
-
+  // 1. Consistency Pie Chart
+  const pie = setupChart("chartConsistency");
+  if (pie) {
+    const { ctx, W, H, el } = pie;
     const data = [
-      { label: "0", val: stats.consistencyData.none, col: "#eee" },
-      { label: "1", val: stats.consistencyData.once, col: "#111" },
-      { label: "2", val: stats.consistencyData.twice, col: "#555" },
-      { label: "3+", val: stats.consistencyData.threePlus, col: "#888" }
+      { label: "Missed", val: stats.consistencyData.none, col: "#222" },
+      { label: "1 Post", val: stats.consistencyData.once, col: "#c5a059" },
+      { label: "2 Posts", val: stats.consistencyData.twice, col: "#eac784" },
+      { label: "3+ Posts", val: stats.consistencyData.threePlus, col: "#fff" }
     ].filter(d => d.val > 0);
-
     const total = data.reduce((acc, d) => acc + d.val, 0);
     let startAngle = -Math.PI / 2;
     const centerX = W / 2 - 40;
     const centerY = H / 2;
-    const radius = Math.min(centerX, centerY) - 10;
-
+    const radius = Math.min(centerX, centerY) - 15;
     data.forEach(d => {
       const sliceAngle = (d.val / total) * Math.PI * 2;
       ctx.fillStyle = d.col;
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
+      ctx.beginPath(); ctx.moveTo(centerX, centerY);
       ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
-      ctx.closePath();
-      ctx.fill();
+      ctx.closePath(); ctx.fill();
+      el._points.push({ isSlice: true, cx: centerX, cy: centerY, r: radius, start: startAngle, end: startAngle + sliceAngle, ttX: centerX, ttY: centerY - 20, data: { label: d.label, sub: `${d.val} days (${Math.round(d.val / total * 100)}%)` } });
       startAngle += sliceAngle;
     });
-
-    // Legend
-    ctx.textAlign = "left";
-    ctx.font = "11px sans-serif";
+    ctx.textAlign = "left"; ctx.font = "11px sans-serif";
     data.forEach((d, i) => {
       const ty = centerY - (data.length * 10) + i * 20;
-      ctx.fillStyle = d.col;
-      ctx.fillRect(W - 75, ty - 8, 12, 12);
-      ctx.fillStyle = "#444";
-      ctx.fillText(`${d.label} post${d.label === "1" ? "" : "s"}: ${d.val}`, W - 58, ty + 2);
+      ctx.fillStyle = d.col; ctx.fillRect(W - 75, ty - 8, 12, 12);
+      ctx.fillStyle = "#ccc"; ctx.fillText(`${d.label}: ${d.val}`, W - 58, ty + 2);
     });
   }
 
   // 2. Punctuality by Hour Chart
-  const pEl = document.getElementById("chartPunctuality");
-  if (pEl && stats.pByHour) {
-    const ctx = pEl.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const rect = pEl.getBoundingClientRect();
-    pEl.width = rect.width * dpr;
-    pEl.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    const W = rect.width;
-    const H = rect.height;
-    ctx.clearRect(0, 0, W, H);
-
+  const punct = setupChart("chartPunctuality");
+  if (punct && stats.pByHour) {
+    const { ctx, W, H, el } = punct;
     const data = stats.pByHour;
-    const padding = 20;
-    const chartW = W - padding * 2;
+    const padding = 30;
+    const chartW = W - padding * 1.5;
     const chartH = H - padding * 2;
-
-    // Draw grid
-    ctx.strokeStyle = "#eee";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding + chartW, padding);
-    ctx.moveTo(padding, padding + chartH);
-    ctx.lineTo(padding + chartW, padding + chartH);
-    ctx.stroke();
-
-    // Draw line
-    ctx.strokeStyle = "#111";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
+    ctx.strokeStyle = "#444"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padding, padding); ctx.lineTo(padding + chartW, padding);
+    ctx.moveTo(padding, padding + chartH); ctx.lineTo(padding + chartW, padding + chartH); ctx.stroke();
+    ctx.strokeStyle = "#c5a059"; ctx.lineWidth = 2; ctx.beginPath();
     let firstSet = false;
     data.forEach((rate, h) => {
       if (rate !== null) {
         const x = padding + (h / 23) * chartW;
         const y = padding + chartH - (rate / 100) * chartH;
-        if (!firstSet) { ctx.moveTo(x, y); firstSet = true; }
-        else ctx.lineTo(x, y);
+        if (!firstSet) { ctx.moveTo(x, y); firstSet = true; } else ctx.lineTo(x, y);
+        el._points.push({ x, y, data: { label: `${h}:00 - ${h + 1}:00`, sub: `${Math.round(rate)}% On Time` } });
       }
     });
     ctx.stroke();
-
-    // Labels
-    ctx.fillStyle = "#aaa";
-    ctx.font = "9px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("12 AM", padding, H - 5);
-    ctx.fillText("12 PM", padding + chartW / 2, H - 5);
-    ctx.fillText("11 PM", padding + chartW, H - 5);
-
-    ctx.textAlign = "right";
-    ctx.fillText("100%", padding - 2, padding + 3);
-    ctx.fillText("0%", padding - 2, padding + chartH + 3);
+    ctx.fillStyle = "#888"; ctx.font = "9px sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("12 AM", padding, H - 10); ctx.fillText("12 PM", padding + chartW / 2, H - 10); ctx.fillText("11 PM", padding + chartW, H - 10);
+    ctx.textAlign = "right"; ctx.fillText("100%", padding - 5, padding + 3); ctx.fillText("0%", padding - 5, padding + chartH + 3);
   }
 
   // 3. Monthly Heatmap
-  const hEl = document.getElementById("chartMonthHeatmap");
-  if (hEl) {
-    const ctx = hEl.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const rect = hEl.getBoundingClientRect();
-    hEl.width = rect.width * dpr;
-    hEl.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    const W = rect.width;
-    const H = rect.height;
-    ctx.clearRect(0, 0, W, H);
-
+  const heat = setupChart("chartMonthHeatmap");
+  if (heat) {
+    const { ctx, W, H, el } = heat;
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const blockW = W / 6;
     const blockH = H / 2;
-
     stats.monthMap.forEach((m, i) => {
-      const col = i % 6;
-      const row = Math.floor(i / 6);
-      const x = col * blockW;
-      const y = row * blockH;
-
-      // Intensity (0 to 31 days)
+      const col = i % 6, row = Math.floor(i / 6);
+      const x = col * blockW, y = row * blockH;
       const intensity = m.uniqueCount / 31;
-      ctx.fillStyle = `rgba(17, 17, 17, ${0.05 + intensity * 0.95})`;
+      ctx.fillStyle = `rgba(197, 160, 89, ${0.1 + intensity * 0.9})`; // Gold heatmap
       ctx.fillRect(x + 2, y + 2, blockW - 4, blockH - 4);
-
-      ctx.fillStyle = intensity > 0.5 ? "#fff" : "#888";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "center";
+      ctx.fillStyle = intensity > 0.5 ? "#000" : "#fff"; // Contrast text on gold/dark
+      ctx.font = "10px sans-serif"; ctx.textAlign = "center";
       ctx.fillText(monthNames[i], x + blockW / 2, y + blockH / 2 + 4);
+      // Finding a representative BeReal for the month (a favorite if possible)
+      const yr = new Date().getFullYear(); // Or parse from posts, current year is fine
+      const monthPrefix = `${yr}-${String(i + 1).padStart(2, '0')}`;
+      const monthPosts = posts.filter(p => p.date.getMonth() === i);
+      const fav = monthPosts.find(p => getNote(postKey(p)).favorite) || monthPosts[0];
+      el._points.push({ isRect: true, x, y, w: blockW, h: blockH, data: { label: m.month, sub: `${m.uniqueCount} active days`, img: fav ? (fav.backUrl || fav.frontUrl) : null } });
     });
   }
 
   // 4. Time Machine Scatter Plot
-  const scatterEl = document.getElementById("chartScatter");
-  if (scatterEl) {
-    const ctx = scatterEl.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const rect = scatterEl.getBoundingClientRect();
-    scatterEl.width = rect.width * dpr;
-    scatterEl.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    const W = rect.width;
-    const H = rect.height;
-    ctx.clearRect(0, 0, W, H);
-
+  const scatter = setupChart("chartScatter");
+  if (scatter) {
+    const { ctx, W, H, el } = scatter;
     if (stats.scatterData.length > 0) {
-      const minX = stats.scatterData[0].x;
-      const maxX = stats.scatterData[stats.scatterData.length - 1].x;
-      const rangeX = maxX - minX || 1;
-
-      // Draw dots
-      ctx.fillStyle = "rgba(17, 17, 17, 0.4)";
-      stats.scatterData.forEach(p => {
-        const x = 50 + ((p.x - minX) / rangeX) * (W - 70);
-        const y = 30 + (p.y / 1440) * (H - 60); // 1440 mins in day
-        ctx.beginPath();
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
-        ctx.fill();
+      const minX = stats.scatterData[0].x, maxX = stats.scatterData[stats.scatterData.length - 1].x, rangeX = maxX - minX || 1;
+      ctx.fillStyle = "rgba(197, 160, 89, 0.6)"; // Gold scatter points
+      stats.scatterData.forEach(pData => {
+        const x = 50 + ((pData.x - minX) / rangeX) * (W - 70);
+        const y = 30 + (pData.y / 1440) * (H - 60);
+        el._points.push({ x, y, data: { date: pData.post.date.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }), time: pData.post.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), img: pData.post.backUrl || pData.post.frontUrl } });
+        ctx.beginPath(); ctx.arc(x, y, 2.5, 0, Math.PI * 2); ctx.fill();
       });
-
-      // Axis labels (Time)
-      ctx.fillStyle = "#888";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText("12 AM", 40, 33);
-      ctx.fillText("12 PM", 40, H / 2 + 3);
-      ctx.fillText("12 AM", 40, H - 27);
+      ctx.fillStyle = "#888"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+      ctx.fillText("12 AM", 40, 33); ctx.fillText("12 PM", 40, H / 2 + 3); ctx.fillText("12 AM", 40, H - 27);
     }
   }
 
-  // 3. Weekly Bar Chart
-  const weeklyEl = document.getElementById("chartWeekly");
-  if (weeklyEl) {
-    const ctx = weeklyEl.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const rect = weeklyEl.getBoundingClientRect();
-    weeklyEl.width = rect.width * dpr;
-    weeklyEl.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-
-    const W = rect.width;
-    const H = rect.height;
-    ctx.clearRect(0, 0, W, H);
-
+  // 5. Weekly Bar Chart
+  const weekly = setupChart("chartWeekly");
+  if (weekly) {
+    const { ctx, W, H, el } = weekly;
     const maxVal = Math.max(...stats.weekMap, 1);
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const barW = (W - 80) / 7;
-
     stats.weekMap.forEach((v, i) => {
       const barH = (v / maxVal) * (H - 60);
-      const x = 40 + i * barW;
-      const y = H - 30 - barH;
-
-      ctx.fillStyle = "#111";
-      ctx.fillRect(x + 10, y, barW - 20, barH);
-
-      ctx.fillStyle = "#888";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "center";
+      const x = 40 + i * barW, y = H - 30 - barH;
+      ctx.fillStyle = "#c5a059"; ctx.fillRect(x + 10, y, barW - 20, barH);
+      ctx.fillStyle = "#888"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
       ctx.fillText(dayNames[i], x + barW / 2, H - 15);
       if (v > 0) ctx.fillText(v, x + barW / 2, y - 5);
+      el._points.push({ isRect: true, x: x + 10, y, w: barW - 20, h: barH, data: { label: dayNames[i], sub: `${v} posts on this day` } });
     });
   }
 }
+
+window.addEventListener("resize", () => {
+  if (els.views.stats && els.views.stats.style.display !== "none" && currentStats) {
+    renderCharts(currentStats);
+  }
+});
 

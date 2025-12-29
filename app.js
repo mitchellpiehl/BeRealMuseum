@@ -2670,8 +2670,10 @@ els.file?.addEventListener("change", async (e) => {
     // Hide entrance and show header
     const entrance = document.getElementById("entrance");
     const header = document.getElementById("mainHeader");
+    const footer = document.getElementById("mainFooter");
     if (entrance) entrance.classList.add("hidden");
     if (header) header.classList.add("active");
+    if (footer) footer.classList.add("active");
 
     setStatus("Welcome to the Museum.");
   } catch (err) {
@@ -3710,4 +3712,3 @@ window.addEventListener("resize", () => {
     renderCharts(currentStats);
   }
 });
-

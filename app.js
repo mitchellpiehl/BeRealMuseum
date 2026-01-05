@@ -153,7 +153,8 @@ let friends = [];
 let comments = [];
 let memories = [];
 let realmojiCount = 0;
-let realmojiUrls = [];
+let realmojiUrls = []; // [{url, path}]
+let realmojiFavorites = new Set(JSON.parse(localStorage.getItem("realmojiFavorites") || "[]"));
 let mediaObjectUrls = [];
 let notes = loadNotes();
 
@@ -1001,7 +1002,16 @@ function renderBookPreview(favs) {
   const globalPages = [];
 
   // 1. Title Page
-  globalPages.push({ type: 'title', title: "BeReal Museum", subtitle: `Yearbook ${new Date().getFullYear()}` });
+  const earliest = ordered[0].date;
+  const latest = ordered[ordered.length - 1].date;
+  const spanStr = `${earliest.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })} – ${latest.toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`;
+
+  globalPages.push({
+    type: 'title',
+    title: "Museum Archive",
+    subtitle: spanStr,
+    recordNo: ordered.length + 1
+  });
 
   // 2. Travel Log (if location bits exist)
   const locPosts = ordered.filter(p => p.location && (p.location.city || p.location.country));
@@ -1021,8 +1031,35 @@ function renderBookPreview(favs) {
     }
   }
 
-  // 4. Stats Wrap-Up
-  globalPages.push({ type: 'stats', favCount: ordered.length, monthCount: bookState.chapters.length });
+  // 4. Collection Stats
+  const eraCounts = {};
+  ordered.forEach(p => {
+    const hits = erasForPost(p, eras);
+    hits.forEach(id => {
+      eraCounts[id] = (eraCounts[id] || 0) + 1;
+    });
+  });
+  let topEraName = "None";
+  let topEraId = null;
+  let topC = 0;
+  Object.keys(eraCounts).forEach(id => {
+    if (eraCounts[id] > topC) {
+      topC = eraCounts[id];
+      topEraId = id;
+    }
+  });
+  if (topEraId) {
+    const found = eras.find(e => e.id === topEraId);
+    if (found) topEraName = found.name;
+  }
+
+  globalPages.push({
+    type: 'stats',
+    favCount: ordered.length,
+    monthCount: bookState.chapters.length,
+    span: `${formatYMDPretty(getLocalDateStr(ordered[0]))} to ${formatYMDPretty(getLocalDateStr(ordered[ordered.length - 1]))}`,
+    topEra: topEraName
+  });
 
   bookState.pages = globalPages;
 
@@ -1085,12 +1122,15 @@ function createPageEl(pData, side, totalPages, pageIndex) {
     const el = document.createElement("div");
     el.className = "titlePage";
     el.innerHTML = `
-      <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
-        <div style="font-size:12px; letter-spacing:4px; opacity:0.6; margin-bottom:20px;">MEMORIES</div>
-        <h1 style="font-size:36px; margin:0;">${pData.title}</h1>
-        <div style="font-size:18px; margin-top:20px; opacity:0.8;">${pData.subtitle}</div>
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+        <div style="width:60px; height:1px; background:var(--accent); margin-bottom:40px;"></div>
+        <div style="font-size:11px; letter-spacing:5px; opacity:0.6; margin-bottom:15px; color:var(--accent); font-weight:600;">OFFICIAL ARCHIVE</div>
+        <h1 style="font-size:42px; margin:0; font-weight:700; letter-spacing:-1px;">${pData.title}</h1>
+        <div style="width:40px; height:2px; background:#333; margin:30px 0;"></div>
+        <div style="font-size:16px; font-weight:400; opacity:0.8; letter-spacing:1px;">${pData.subtitle}</div>
+        <div style="margin-top:60px; font-size:10px; opacity:0.4; letter-spacing:2px;">EXHIBITION RECORD NO. ${pData.recordNo || 0}</div>
       </div>
-      <div style="font-size:10px; opacity:0.4; margin-bottom:20px;">CREATED WITH BEREAL MUSEUM</div>
+      <div style="font-size:9px; opacity:0.3; letter-spacing:3px; margin-bottom:20px;">CURATED BY BEREAL MUSEUM</div>
     `;
     return el;
   }
@@ -1113,19 +1153,29 @@ function createPageEl(pData, side, totalPages, pageIndex) {
   } else if (pData.type === 'stats') {
     el.innerHTML = `
       <div class="dividerPage">
-        <div style="font-size:40px; margin-bottom:20px;">📊</div>
-        <h2 style="font-size:24px; margin:0 0 30px;">Year in Review</h2>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; text-align:center;">
+        <div style="font-size:40px; margin-bottom:20px;">🏛️</div>
+        <h2 style="font-size:24px; margin:0 0 10px;">Collection Wrap-up</h2>
+        <div style="font-size:12px; opacity:0.6; margin-bottom:30px;">Archive Summary</div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; text-align:center; width:100%;">
           <div>
             <div style="font-size:24px; font-weight:700;">${pData.favCount}</div>
-            <div style="font-size:10px; opacity:0.6;">FAVORITES</div>
+            <div style="font-size:10px; opacity:0.6; letter-spacing:1px;">CURATED POSTS</div>
           </div>
           <div>
             <div style="font-size:24px; font-weight:700;">${pData.monthCount}</div>
-            <div style="font-size:10px; opacity:0.6;">ACTIVE MONTHS</div>
+            <div style="font-size:10px; opacity:0.6; letter-spacing:1px;">ACTIVE MONTHS</div>
+          </div>
+          <div style="grid-column: span 2; border-top:1px solid #eee; padding-top:20px;">
+            <div style="font-size:16px; font-weight:600;">${pData.topEra}</div>
+            <div style="font-size:10px; opacity:0.6; letter-spacing:1px;">MOST PROMINENT ERA</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <div style="font-size:14px; font-weight:500; font-style:italic;">${pData.span}</div>
+            <div style="font-size:10px; opacity:0.6; letter-spacing:1px;">TIME SPAN</div>
           </div>
         </div>
-        <div style="margin-top:40px; font-size:11px; font-style:italic; opacity:0.5;">End of Record</div>
+        <div style="margin-top:40px; font-size:11px; font-style:italic; opacity:0.3;">BeReal Museum Archive System v1.0</div>
       </div>
     `;
   } else if (pData.type === 'divider') {
@@ -1175,9 +1225,11 @@ function createPageEl(pData, side, totalPages, pageIndex) {
       }).join("") : "";
 
       cap.innerHTML = `
-        <div style="font-weight:600; font-size:10px; margin-bottom:2px;">${eraTags}</div>
-        <div style="font-weight:600; font-size:11px;">${escapeHtml(label)}</div>
-        <div style="font-size:9px; opacity:0.5; margin-top:2px;">${it.date.toLocaleDateString()}</div>
+        <div style="padding:12px;">
+          <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;">${eraTags}</div>
+          <div style="font-weight:600; font-size:12px; line-height:1.4; color:#111;">${escapeHtml(label)}</div>
+          <div style="font-size:10px; opacity:0.5; margin-top:6px; font-weight:500;">${it.date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
+        </div>
       `;
       card.append(frame, cap);
       grid.appendChild(card);
@@ -2164,18 +2216,129 @@ function renderRealmojiWall() {
     return;
   }
 
-  const frag = document.createDocumentFragment();
-  realmojiUrls.forEach((url, i) => {
-    const bubble = document.createElement("div");
-    bubble.className = "emojiBubble";
-    bubble.style.setProperty("--delay", `${(Math.random() * 5).toFixed(2)}s`);
+  // Favorites Section
+  const favs = realmojiUrls.filter(rm => realmojiFavorites.has(rm.path));
+  if (favs.length > 0) {
+    const favHeader = document.createElement("div");
+    favHeader.className = "wallSectionHeader";
+    favHeader.innerHTML = `<h3>💖 Curated Collection</h3>`;
+    wall.appendChild(favHeader);
 
-    const img = document.createElement("img");
-    img.src = url;
-    bubble.appendChild(img);
-    frag.appendChild(bubble);
+    const favGrid = document.createElement("div");
+    favGrid.className = "realmojiGrid";
+    favs.forEach(rm => favGrid.appendChild(createRealmojiBubble(rm)));
+    wall.appendChild(favGrid);
+
+    const allHeader = document.createElement("div");
+    allHeader.className = "wallSectionHeader";
+    allHeader.innerHTML = `<h3>🏛️ The Full Archive</h3>`;
+    wall.appendChild(allHeader);
+  }
+
+  const mainGrid = document.createElement("div");
+  mainGrid.className = "realmojiGrid";
+  realmojiUrls.forEach(rm => mainGrid.appendChild(createRealmojiBubble(rm)));
+  wall.appendChild(mainGrid);
+}
+
+function createRealmojiBubble(rm) {
+  const bubble = document.createElement("div");
+  bubble.className = "emojiBubble";
+  if (realmojiFavorites.has(rm.path)) bubble.classList.add("isFavorite");
+  bubble.style.setProperty("--delay", `${(Math.random() * 5).toFixed(2)}s`);
+  bubble.style.display = "none"; // Hide until image loads
+
+  const img = document.createElement("img");
+  img.src = rm.url;
+
+  // Only show bubble if image loads successfully
+  img.onload = () => {
+    bubble.style.display = "";
+  };
+
+  // Remove bubble if image fails to load
+  img.onerror = () => {
+    bubble.remove();
+    console.warn(`Failed to load RealMoji image: ${rm.url}`);
+  };
+
+  // Click handler to open lightbox
+  bubble.addEventListener("click", () => {
+    openRealmojiModal(rm.url);
   });
-  wall.appendChild(frag);
+
+  // Heart Favorite Button
+  const heart = document.createElement("div");
+  heart.className = "bubbleHeart";
+  heart.innerHTML = "❤";
+  heart.addEventListener("click", (e) => {
+    e.stopPropagation(); // Don't open lightbox
+    toggleRealmojiFavorite(rm.path);
+  });
+
+  bubble.appendChild(img);
+  bubble.appendChild(heart);
+  return bubble;
+}
+
+// Toggle RealMoji Favorite
+function toggleRealmojiFavorite(path) {
+  if (realmojiFavorites.has(path)) {
+    realmojiFavorites.delete(path);
+  } else {
+    realmojiFavorites.add(path);
+  }
+  localStorage.setItem("realmojiFavorites", JSON.stringify([...realmojiFavorites]));
+  renderRealmojiWall(); // Re-render to update UI
+}
+
+// Open RealMoji in lightbox modal
+function openRealmojiModal(imageUrl) {
+  const modal = document.getElementById("realmojiModal");
+  const modalImg = document.getElementById("realmojiModalImg");
+  if (!modal || !modalImg) return;
+
+  modalImg.src = imageUrl;
+  modal.classList.add("open");
+
+  // Prevent body scroll when modal is open
+  document.body.style.overflow = "hidden";
+}
+
+// Close RealMoji modal
+function closeRealmojiModal() {
+  const modal = document.getElementById("realmojiModal");
+  if (!modal) return;
+
+  modal.classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// Set up modal close handlers
+const realmojiModal = document.getElementById("realmojiModal");
+if (realmojiModal) {
+  // Close on background click
+  realmojiModal.addEventListener("click", (e) => {
+    if (e.target === realmojiModal) {
+      closeRealmojiModal();
+    }
+  });
+
+  // Close on close button click
+  const closeBtn = realmojiModal.querySelector(".closeBtn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      closeRealmojiModal();
+    });
+  }
+
+  // Close on Escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && realmojiModal.classList.contains("open")) {
+      closeRealmojiModal();
+    }
+  });
 }
 
 
@@ -2573,9 +2736,12 @@ els.file?.addEventListener("change", async (e) => {
     // Pre-create URLs for Realmoji Wall
     realmojiKeys.forEach(k => {
       const bytes = z[k];
+      // Skip empty or very small files (likely corrupted/invalid)
+      if (!bytes || bytes.length < 100) return;
+
       const blob = new Blob([bytes], { type: "image/webp" });
       const url = URL.createObjectURL(blob);
-      realmojiUrls.push(url);
+      realmojiUrls.push({ url, path: k });
       mediaObjectUrls.push(url); // Ensure cleanup
     });
 
@@ -3050,6 +3216,15 @@ const formatYMDPretty = (ymd) => {
   });
 };
 
+// Helper to get YYYY-MM-DD from a post object (Local Time)
+const getLocalDateStr = (p) => {
+  if (!p || !p.date) return "";
+  const y = p.date.getFullYear();
+  const m = String(p.date.getMonth() + 1).padStart(2, '0');
+  const d = String(p.date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
 let currentStats = null;
 function renderStats() {
   if (!posts.length) return;
@@ -3105,6 +3280,11 @@ function renderStats() {
   safeText("stTimeLate", stats.timeLate);
   safeText("stTimePeak", `${stats.hourPeak}:00 - ${stats.hourPeak + 1}:00`);
 
+  // Moment Stats
+  safeText("stMomentEarliest", stats.momentEarliest);
+  safeText("stMomentLatest", stats.momentLatest);
+  safeText("stMomentCommon", stats.momentCommon);
+
   // 8. NEW: Retakes
   safeText("stRetakeTotal", stats.retakeTotal.toLocaleString());
   safeText("stRetakeMax", stats.retakeMax.toLocaleString());
@@ -3139,14 +3319,6 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
 
   if (!sorted.length) return {};
 
-  // USE LOCAL TIME TO MATCH GRID VIEW
-  const getLocalDate = (p) => {
-    const y = p.date.getFullYear();
-    const m = String(p.date.getMonth() + 1).padStart(2, '0');
-    const d = String(p.date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  };
-
   const first = sorted[0].date;
 
   // Duration calculation
@@ -3175,7 +3347,7 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
 
   sorted.forEach(p => {
     // 1. Literal Date Stats (LOCAL)
-    const k = getLocalDate(p);
+    const k = getLocalDateStr(p);
     const pk = postKey(p); // dedupe key
 
     if (!dayPostIds[k]) dayPostIds[k] = new Set();
@@ -3276,9 +3448,10 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
     // Streak logic
     if (i > 0) {
       const prev = new Date(uniqueDays[i - 1] + 'T00:00:00');
-      const diff = (d - prev) / (1000 * 60 * 60 * 24);
+      const diffMs = d - prev;
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
 
-      if (diff === 1) {
+      if (diffDays === 1) {
         currentStreak++;
       } else {
         if (currentStreak > maxStreak) {
@@ -3290,7 +3463,7 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
         currentStart = uniqueDays[i];
 
         // Dry Spell logic (gap between unique posting days)
-        const gap = diff - 1;
+        const gap = diffDays - 1;
         if (gap > maxGap) {
           maxGap = gap;
           gapStart = uniqueDays[i - 1];
@@ -3302,6 +3475,7 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
       currentStart = uniqueDays[0];
     }
   }
+  // Don't forget to check the final streak
   if (currentStreak > maxStreak) {
     maxStreak = currentStreak;
     streakStart = currentStart;
@@ -3378,8 +3552,43 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
     if (c > peakHC) { peakHC = c; peakH = h; }
   });
 
+  // BeReal Moment Analysis
+  let momentMin = 24 * 60;
+  let momentMax = -1;
+  let momentMinStr = "-";
+  let momentMaxStr = "-";
+  const momentHourMap = new Array(24).fill(0);
+  let momentPeakH = -1;
+  let momentPeakHC = 0;
+
+  memoryList.forEach(m => {
+    if (m.berealMoment) {
+      const mDate = new Date(m.berealMoment);
+      const h = mDate.getHours();
+      const min = mDate.getMinutes();
+      const timeVal = h * 60 + min;
+
+      momentHourMap[h]++;
+      if (timeVal < momentMin) {
+        momentMin = timeVal;
+        momentMinStr = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+      }
+      if (timeVal > momentMax) {
+        momentMax = timeVal;
+        momentMaxStr = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+      }
+    }
+  });
+
+  momentHourMap.forEach((c, h) => {
+    if (c > momentPeakHC) {
+      momentPeakHC = c;
+      momentPeakH = h;
+    }
+  });
+
   return {
-    firstDateStr: getLocalDate(sorted[0]),
+    firstDateStr: getLocalDateStr(sorted[0]),
     durationStr: durStr,
     totalPosts: list.length,
     percentPosted: pct,
@@ -3490,7 +3699,7 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
       threePlus: Object.values(dayCounts).filter(c => c >= 3).length
     },
     scatterData: sorted.map(p => ({
-      x: p.date.getTime(), // Using raw time for scatter
+      x: p.date.getTime(),
       y: p.date.getHours() * 60 + p.date.getMinutes(),
       post: p
     })),
@@ -3498,7 +3707,12 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
       month: monthsByName[i],
       uniqueCount: set.size,
       totalDays: daysInMonthTotal[i] || 31
-    }))
+    })),
+    // NEW: Moment Stats
+    momentEarliest: momentMinStr,
+    momentLatest: momentMaxStr,
+    momentCommon: momentPeakH !== -1 ? `${momentPeakH}:00` : "-",
+    momentHourMap
   };
 }
 
@@ -3703,6 +3917,38 @@ function renderCharts(stats) {
       ctx.fillText(dayNames[i], x + barW / 2, H - 15);
       if (v > 0) ctx.fillText(v, x + barW / 2, y - 5);
       el._points.push({ isRect: true, x: x + 10, y, w: barW - 20, h: barH, data: { label: dayNames[i], sub: `${v} posts on this day` } });
+    });
+  }
+
+  // 12. BeReal Moment Times Distribution
+  const moments = setupChart("chartMomentTimes");
+  if (moments) {
+    const { ctx, W, H, el } = moments;
+    const maxVal = Math.max(...stats.momentHourMap, 1);
+    const barW = (W - 80) / 24;
+
+    stats.momentHourMap.forEach((v, h) => {
+      const barH = (v / maxVal) * (H - 60);
+      const x = 40 + h * barW;
+      const y = H - 30 - barH;
+
+      ctx.fillStyle = "#c5a059";
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(x + 1, y, barW - 2, barH);
+      ctx.globalAlpha = 1.0;
+
+      // Every 4 hours show a label
+      if (h % 4 === 0) {
+        ctx.fillStyle = "#888";
+        ctx.font = "9px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`${h}:00`, x + barW / 2, H - 15);
+      }
+
+      el._points.push({
+        isRect: true, x: x + 1, y, w: barW - 2, h: barH,
+        data: { label: `${h}:00`, sub: `${v} BeReal Moments` }
+      });
     });
   }
 }

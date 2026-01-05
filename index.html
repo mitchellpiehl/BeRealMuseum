@@ -575,48 +575,94 @@
     .bookGrid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 25px;
       flex: 1;
     }
 
     .bookPhoto {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-
-    @media (max-width: 900px) {
-      .bookGrid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .bookPhoto {
-      border: 1px solid #eee;
-      border-radius: 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
       overflow: hidden;
-      background: #fafafa;
+      background: #ffffff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .bookPhoto:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
 
     .bookPhoto .frame {
-      height: 260px;
+      height: 240px;
+      background: #f8f8f8;
+      position: relative;
     }
 
     .bookCaption {
-      padding: 10px 12px;
-      font-size: 12px;
+      background: #fff;
+      border-top: 1px solid #f0f0f0;
+      flex-grow: 1;
+    }
+
+    .bookPage {
+      background: white;
+      color: #333;
+    }
+
+    .titlePage {
+      background: #fff;
+      color: #111;
+      border: 1px solid #f0f0f0;
     }
 
     /* Realmoji Wall Interactive Bubble Layout */
+    /* Realmoji Wall Interactive Bubble Layout */
     .realmojiWall {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      padding: 60px 20px;
+      min-height: calc(100vh - 120px);
+      background: var(--bg-body);
+    }
+
+    .realmojiGrid {
       display: flex;
       flex-wrap: wrap;
       gap: 30px;
       justify-content: center;
-      padding: 60px 20px;
       perspective: 1200px;
-      background: radial-gradient(circle at center, #ffffff 0%, #f0f0f0 100%);
-      min-height: calc(100vh - 120px);
+    }
+
+    .wallSectionHeader {
+      width: 100%;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .wallSectionHeader h3 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .wallSectionHeader h3::before,
+    .wallSectionHeader h3::after {
+      content: "";
+      height: 1px;
+      flex-grow: 1;
+      background: linear-gradient(to right, transparent, var(--accent), transparent);
+      max-width: 200px;
     }
 
     .emojiBubble {
@@ -624,11 +670,9 @@
       width: var(--size);
       height: var(--size);
       border-radius: 50%;
-      background: #fff;
-      border: 6px solid #fff;
-      box-shadow:
-        0 15px 35px rgba(0, 0, 0, 0.1),
-        inset 0 -8px 15px rgba(0, 0, 0, 0.05);
+      background: #1a1a1a;
+      border: 4px solid #333;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       overflow: hidden;
       cursor: pointer;
       position: relative;
@@ -638,6 +682,11 @@
       transform: rotate(var(--rotation, 0deg));
     }
 
+    .emojiBubble.isFavorite {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(197, 160, 89, 0.3);
+    }
+
     .emojiBubble::after {
       content: '';
       position: absolute;
@@ -645,19 +694,54 @@
       left: 15%;
       width: 25%;
       height: 25%;
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 50%;
       filter: blur(4px);
     }
 
     .emojiBubble:hover {
       transform: scale(1.3) translateY(-20px) rotate(var(--hover-rotation, 5deg));
-      box-shadow:
-        0 30px 60px rgba(0, 0, 0, 0.25),
-        0 0 20px rgba(255, 255, 255, 1);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8);
       z-index: 100;
-      border-color: #000;
+      border-color: var(--accent);
       animation-play-state: paused;
+    }
+
+    .bubbleHeart {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .emojiBubble:hover .bubbleHeart {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .emojiBubble.isFavorite .bubbleHeart {
+      color: #ff4d4d;
+      background: rgba(255, 255, 255, 0.9);
+      border-color: #ff4d4d;
+      opacity: 1;
+    }
+
+    .bubbleHeart:hover {
+      transform: scale(1.3) !important;
+      background: #fff;
+      color: #ff4d4d;
     }
 
     .emojiBubble img {
@@ -665,6 +749,72 @@
       height: 100%;
       object-fit: cover;
       pointer-events: none;
+    }
+
+    /* RealMoji Lightbox Modal */
+    #realmojiModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      animation: fadeIn 0.3s ease;
+    }
+
+    #realmojiModal.open {
+      display: flex;
+    }
+
+    #realmojiModal img {
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.8);
+      animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #realmojiModal .closeBtn {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+    }
+
+    #realmojiModal .closeBtn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.5);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     @keyframes floatBubble {
@@ -1698,6 +1848,32 @@
     footer a:hover {
       text-decoration: underline;
     }
+
+    /* Manager Modal - Force Light Theme */
+    .managerBox {
+      color: #1a1a1a !important;
+    }
+
+    .managerBox h2,
+    .managerBox span,
+    .managerBox label,
+    .managerBox button {
+      color: #1a1a1a !important;
+    }
+
+    .managerBox .btn {
+      background: #fff !important;
+      border: 1px solid #ddd !important;
+      color: #1a1a1a !important;
+    }
+
+    .managerBox .btn:hover {
+      background: #f5f5f5 !important;
+    }
+
+    .managerBox input[type="checkbox"] {
+      accent-color: #000;
+    }
   </style>
 </head>
 
@@ -2024,6 +2200,27 @@
           <canvas id="chartMonthHeatmap" style="width:100%; height:100px; margin-top:8px;"></canvas>
         </div>
 
+        <!-- BeReal Moment Times -->
+        <div class="statCard" style="grid-column: span 2;">
+          <h3>⏰ BeReal Moment Times</h3>
+          <div style="display:flex; gap:32px; flex-wrap:wrap; margin-bottom:20px;">
+            <div>
+              <div class="statSub">Earliest Moment</div>
+              <div class="statBig" style="font-size:24px;" id="stMomentEarliest">-</div>
+            </div>
+            <div>
+              <div class="statSub">Latest Moment</div>
+              <div class="statBig" style="font-size:24px;" id="stMomentLatest">-</div>
+            </div>
+            <div>
+              <div class="statSub">Most Common Hour</div>
+              <div class="statBig" style="font-size:24px;" id="stMomentCommon">-</div>
+            </div>
+          </div>
+          <div style="margin-top:12px; font-size:12px; color:#888;">24-Hour Distribution</div>
+          <canvas id="chartMomentTimes" style="width:100%; height:180px; margin-top:8px;"></canvas>
+        </div>
+
         <!-- Time Machine -->
         <div class="statCard" style="grid-column: span 2;">
           <h3>Time Machine</h3>
@@ -2118,6 +2315,12 @@
     <section id="viewRealmojiWall" style="display:none">
       <div id="realmojiWall" class="realmojiWall"></div>
     </section>
+
+    <!-- RealMoji Lightbox Modal -->
+    <div id="realmojiModal">
+      <div class="closeBtn">×</div>
+      <img id="realmojiModalImg" src="" alt="RealMoji">
+    </div>
 
     <!-- Story modal -->
     <div id="storyModal">

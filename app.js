@@ -3251,6 +3251,8 @@ function renderStats() {
   safeText("stTotal", stats.totalPosts.toLocaleString());
 
   // 2. Streak & Dry Spell
+  safeText("stMemoryStreak", `${stats.longestMemoryStreak} Days`);
+  safeText("stMemoryStreakDates", stats.longestMemoryStreak > 0 ? `${formatYMDPretty(stats.longestMemoryStreakStart)} – ${formatYMDPretty(stats.longestMemoryStreakEnd)}` : "");
   safeText("stStreak", `${stats.longestStreak} Days`);
   safeText("stStreakDates", stats.longestStreak > 0 ? `${formatYMDPretty(stats.streakStart)} – ${formatYMDPretty(stats.streakEnd)}` : "");
   safeText("stDrySpell", stats.maxGap > 0 ? `${stats.maxGap} Days` : "No Gaps");
@@ -3561,6 +3563,57 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
   let momentPeakH = -1;
   let momentPeakHC = 0;
 
+  // Streak Calculation for Memories (by date)
+  let maxMemoryStreak = 0;
+  let maxMemoryStreakStart = null;
+  let maxMemoryStreakEnd = null;
+
+  {
+    const memDates = new Set();
+    memoryList.forEach(m => {
+      // memory dates are typically ISO strings, extract YYYY-MM-DD
+      const d = m.date.split("T")[0];
+      memDates.add(d);
+    });
+    const sortedMemDates = [...memDates].sort(); // ascending "YYYY-MM-DD"
+
+    let curMemStreak = 0;
+    let curMemStart = null;
+
+    for (let i = 0; i < sortedMemDates.length; i++) {
+      const d = new Date(sortedMemDates[i] + 'T00:00:00');
+
+      // First iteration initialization
+      if (curMemStreak === 0) {
+        curMemStreak = 1;
+        curMemStart = sortedMemDates[i];
+      }
+
+      if (i > 0) {
+        const prev = new Date(sortedMemDates[i - 1] + 'T00:00:00');
+        const diffDays = Math.round((d - prev) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          curMemStreak++;
+        } else {
+          // Streak broken
+          if (curMemStreak > maxMemoryStreak) {
+            maxMemoryStreak = curMemStreak;
+            maxMemoryStreakStart = curMemStart;
+            maxMemoryStreakEnd = sortedMemDates[i - 1];
+          }
+          curMemStreak = 1;
+          curMemStart = sortedMemDates[i];
+        }
+      }
+    }
+    // Check last streak
+    if (curMemStreak > maxMemoryStreak) {
+      maxMemoryStreak = curMemStreak;
+      maxMemoryStreakStart = curMemStart;
+      maxMemoryStreakEnd = sortedMemDates[sortedMemDates.length - 1];
+    }
+  }
+
   memoryList.forEach(m => {
     if (m.berealMoment) {
       const mDate = new Date(m.berealMoment);
@@ -3597,6 +3650,9 @@ function calculateStats(list, friendList = [], commentList = [], rCount = 0, mem
     streakStart,
     streakEnd,
     // NEW
+    longestMemoryStreak: maxMemoryStreak,
+    longestMemoryStreakStart: maxMemoryStreakStart,
+    longestMemoryStreakEnd: maxMemoryStreakEnd,
     maxGap,
     gapStart,
     gapEnd,
